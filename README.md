@@ -4,11 +4,14 @@ This library provides a set of common transformations
 and reductions over the C++ STL collections. We refer to
 transformations and reductions as _expressions_. Expressions
 can be arbitrarily combined in advance before being applied
-to a collection. If the final expression is _not_ a reduction,
-it can be _collected_ into any of the STL collections.
+to a collection. When we apply an expression to a collection,
+we refer to that collection as an _input_. 
+If the final expression is _not_ a reduction,
+it can be _collected_. By this, we mean that the expression is evaluated
+and put into another collection, which we refer to as an _output_.
 All expressions are lazily applied and compiles down to 
 optimal for loops*. This is a work in progress, and I'll
-add functionality as I need it in other projects.
+add functionality as I need it for other projects.
 
 &#8291;* That's the idea anyway, but take it with a grain of salt. 
 I am no C++ expert, and have not verified this claim.
@@ -20,8 +23,8 @@ you need is found under the `colex` namespace.
 
 ## Usage
 The library overloads the `|` operator
-to chain expressions, apply them to collections,
-and collect them into other collections. In the following
+to chain expressions, apply them to inputs,
+and collect them into outputs. In the following
 examples, we assume that `using namespace colex;` is
 present.
 
@@ -38,7 +41,7 @@ auto ys = xs
 // ys == std::vector<int> { 1, 4, 9 };
 ```
 
-### Square and sum
+### Sum of squares
 In this example we square all elements of a vector using `map`
 and sum them using `fold`. We also show that expressions can
 be combined in advance before applying them to a collection.
@@ -83,10 +86,10 @@ auto ys = std::move(xs) | transformation | collect<std::vector>();
 auto zs = some_big_things() | transformation | collect<std::vector>();
 ```
 
-### Converting Between Collections
+### Converting between collections
 In this example we filter duplicates of a vector by first collecting
 to a set, then back to another vector. 
-While the example immediately collects to another type of container,
+While the example immediately collects to another type of collection,
 this can of course also be done after applying some expressions.
 ```cpp
 std::vector<int> xs { 1, 1, 2, 2, 3, 3 };
@@ -105,7 +108,7 @@ std::vector<int> uniques = std::move(xs)
 
 ## Available Expressions
 ### `map(F func)`
-Applies a function `F: T x -> U` to all incoming elements.
+Applies a function `F: T x -> U` to all input elements.
 
 This example doubles all elements of `xs`.
 ```cpp
@@ -116,9 +119,9 @@ auto ys = xs | map([](int x) { 2 * x; }) | collect<std::vector>();
 ```
   
 ###`fold(U initial, F func)` 
-Reduces all incoming elements to a single value.
+Reduces all input elements to a single value.
 Applies a function `F: U acc, T x -> U` where `acc` is the accumulated
-value so far, and `x` is the next incoming element. The returned value
+value so far, and `x` is the next input element. The returned value
 is used as `acc` for the next element. For the first element,
 `acc` is set to `initial`.
 
@@ -130,6 +133,12 @@ auto y = xs | fold(0, [](int acc, int x) { return acc + x; });
 // y == 6
 ```
 
-## Supported Containers
-* `std::vector`
-* `std::set`
+## Supported Collections
+### `std::vector`
+Can be used as both input and output.
+
+### `std::set`
+Can be used as both input and output.
+
+### `std::array`
+Can only be used as input.

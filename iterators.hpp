@@ -49,7 +49,7 @@ class STL : public Iterator<STL<C, T>> {
     return it == end;
   }
 
-  [[nodiscard]] const T &next() {
+  [[nodiscard]] OutputType<STL<C, T>> next() {
     return *(it++);
   }
 
@@ -75,7 +75,7 @@ struct STLMove : public Iterator<STLMove<C, T>> {
     return it == underlying.end();
   }
 
-  [[nodiscard]] T next() {
+  [[nodiscard]] OutputType<STLMove<C, T>> next() {
     return std::move(*(it++));
   }
 
@@ -96,7 +96,7 @@ struct STLMove<std::set, T> : public Iterator<STLMove<std::set, T>> {
     return underlying.empty();
   }
 
-  [[nodiscard]] T next() {
+  [[nodiscard]] OutputType<STLMove<std::set, T>> next() {
     return std::move(underlying.extract(underlying.begin()).value());
   }
 
@@ -106,6 +106,51 @@ struct STLMove<std::set, T> : public Iterator<STLMove<std::set, T>> {
 
 template<template<typename...> typename C, typename T>
 struct Types<STLMove<C, T>> {
+  using Output = T;
+};
+
+template<typename T, size_t N>
+class Array : public Iterator<Array<T, N>> {
+ public:
+  explicit Array(const std::array<T, N> &underlying) : i(0), underlying(underlying) {}
+
+  [[nodiscard]] bool at_end() const {
+    return i == N;
+  }
+
+  [[nodiscard]] OutputType<Array<T, N>> next() {
+    return underlying[i++];
+  }
+
+ private:
+  size_t i;
+  const std::array<T, N> &underlying;
+};
+
+template<typename T, size_t N>
+struct Types<Array<T, N>> {
+  using Output = const T&;
+};
+
+template<typename T, size_t N>
+class ArrayMove : public Iterator<ArrayMove<T, N>> {
+ public:
+  explicit ArrayMove(std::array<T, N> &&underlying) : i(0), underlying(std::move(underlying)) {}
+
+  [[nodiscard]] bool at_end() const {
+    return i == N;
+  }
+
+  [[nodiscard]] OutputType<ArrayMove<T, N>> next() {
+    return std::move(underlying[i++]);
+  }
+ private:
+  size_t i;
+  std::array<T, N> underlying;
+};
+
+template<typename T, size_t N>
+struct Types<ArrayMove<T, N>> {
   using Output = T;
 };
 

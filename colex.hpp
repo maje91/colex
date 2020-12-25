@@ -46,6 +46,22 @@ expression::OutputType<E, iterator::STLMove<C, T>> operator|(C<T> &&xs, const ex
 }
 
 /**
+ * Applies the expression `expr` to the array `xs`.
+ */
+template<typename T, size_t N, typename E>
+expression::OutputType<E, iterator::Array<T, N>> operator|(const std::array<T, N> &xs, const expression::Expression<E> &expr) {
+  return expr.apply(iterator::Array<T, N>(xs));
+}
+
+/**
+ * Applies the expression `expr` to the array `xs`. `xs` is moved.
+ */
+template<typename T, size_t N, typename E>
+expression::OutputType<E, iterator::Array<T, N>> operator|(std::array<T, N> &&xs, const expression::Expression<E> &expr) {
+  return expr.apply(iterator::ArrayMove<T, N>(std::move(xs)));
+}
+
+/**
  * Applies the expression `expr` to the iterator `iter`.
  */
 template<typename I, typename E>
@@ -59,15 +75,9 @@ expression::OutputType<E, I> operator|(iterator::Iterator<I> &&iter, const expre
 template<template<typename...> typename C>
 struct collect;
 
-/**
- * An `std::vector` is a collection.
- */
 template<>
 struct collect<std::vector> {};
 
-/**
- * An `std::set` is a collection
- */
 template<>
 struct collect<std::set> {};
 
@@ -85,6 +95,22 @@ C1<T> operator|(const C2<T> &collection, collect<C1>&&) {
 template<template<typename...> typename C1, template<typename...> typename C2, typename T>
 C1<T> operator|(C2<T> &&collection, collect<C1>&&) {
   return iterator::STLMove<C2, T>(std::move(collection)) | collect<C1>();
+}
+
+/**
+ * Converts an array to a collection of type `C`.
+ */
+template<template<typename...> typename C, typename T, size_t N>
+C<T> operator|(const std::array<T, N> &array, collect<C>&&) {
+  return iterator::Array<T, N>(array) | collect<C>();
+}
+
+/**
+ * Converts an array to a collection of type `C`. The array is moved.
+ */
+template<template<typename...> typename C, typename T, size_t N>
+C<T> operator|(std::array<T, N> &&array, collect<C>&&) {
+  return iterator::ArrayMove<T, N>(std::move(array)) | collect<C>();
 }
 
 /**

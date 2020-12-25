@@ -3,6 +3,8 @@
 
 #include "colex.hpp"
 
+#include <array>
+
 using namespace colex;
 
 struct MoveInt {
@@ -44,11 +46,11 @@ TEST_CASE("map collect") {
 
   auto ys = v | map([](const MoveInt &x) { return 2 * x.x; }) | collect<std::vector>();
 
-          CHECK(ys[0] == 0);
-          CHECK(ys[1] == 2);
-          CHECK(ys[2] == 4);
-          CHECK(ys[3] == 6);
-          CHECK(ys[4] == 8);
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 4);
+  CHECK(ys[3] == 6);
+  CHECK(ys[4] == 8);
 }
 
 TEST_CASE("map fold") {
@@ -90,4 +92,23 @@ TEST_CASE("conversion") {
   CHECK(xs[3] == 3);
   CHECK(xs[4] == 4);
   CHECK(xs.size() == 5);
+}
+
+TEST_CASE("array input map") {
+  std::array<MoveInt, 3> xs{1, 2, 3};
+
+  auto ys = xs | map(square) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 4);
+  CHECK(ys[2] == 9);
+}
+
+TEST_CASE("array conversion") {
+  std::array<MoveInt, 3> xs{1, 2, 3};
+  auto ys = std::move(xs) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
 }
