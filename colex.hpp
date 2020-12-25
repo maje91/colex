@@ -6,11 +6,18 @@ namespace colex {
 
 /**
  * Creates a map expression. See README for details
- * ```
  */
 template<typename F>
 expression::Map<F> map(F func) {
   return expression::Map<F>(func);
+}
+
+/**
+ * Creates a filter expression. See README for details
+ */
+template<typename F>
+expression::Filter<F> filter(F predicate) {
+  return expression::Filter<F>(predicate);
 }
 
 /**
@@ -120,7 +127,9 @@ template<typename I>
 std::vector<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::vector> &&) {
   std::vector<iterator::OutputType<I>> result;
 
-  for (;!iter.at_end(); result.push_back(std::move(iter.next())));
+  for (;!iter.at_end(); iter.advance()) {
+    result.push_back(std::move(iter.content()));
+  }
 
   return std::move(result);
 }
@@ -132,7 +141,9 @@ template<typename I>
 std::set<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::set> &&) {
   std::set<iterator::OutputType<I>> result;
 
-  for (;!iter.at_end(); result.insert(std::move(iter.next())));
+  for (;!iter.at_end(); iter.advance()) {
+    result.insert(std::move(iter.content()));
+  }
 
   return std::move(result);
 }

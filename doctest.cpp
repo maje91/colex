@@ -72,6 +72,18 @@ TEST_CASE("move map collect") {
   CHECK(ys[4] == 16);
 }
 
+TEST_CASE("filter") {
+  auto xs = move_int_vec();
+  auto ys = xs
+            | filter([](const MoveInt &x) { return x < 2; })
+            | map([](const MoveInt& x) { return x.x; })
+            | collect<std::vector>();
+
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 1);
+  CHECK(ys.size() == 2);
+}
+
 TEST_CASE("conversion") {
   auto xs = move_int_vec();
   xs.emplace_back(3);

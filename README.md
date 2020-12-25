@@ -113,7 +113,10 @@ Applies a function `F: T x -> U` to all input elements.
 This example doubles all elements of `xs`.
 ```cpp
 std::vector<int> xs = {1, 2, 3};
-auto ys = xs | map([](int x) { 2 * x; }) | collect<std::vector>();
+
+auto ys = xs 
+        | map([](int x) { 2 * x; }) 
+        | collect<std::vector>();
 
 // ys == std::vector<int> {2, 4, 6}
 ```
@@ -128,9 +131,25 @@ is used as `acc` for the next element. For the first element,
 This example sums all elements of `xs`.
 ```cpp
 std::vector<int> xs = {1, 2, 3};
+
 auto y = xs | fold(0, [](int acc, int x) { return acc + x; });
 
 // y == 6
+```
+
+### `filter(F predicate)`
+Removes all input elements that doesn't satisfy the
+predicate `F: T x -> bool`.
+
+This example only keeps numbers that are smaller than 2
+```cpp
+std::vector<int> xs {0, 1, 2, 3, 4};
+
+auto ys = std::move(xs)
+        | filter([](int x) { return x < 2; })
+        | collect<std::vector>();
+
+// ys == std::vector<int> {0, 1}
 ```
 
 ## Supported Collections
