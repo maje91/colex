@@ -125,7 +125,6 @@ class Take : public Expression<Take> {
     return iterator::Take<I>(count, std::move(iter));
   }
 
-
  private:
   size_t count;
 };
@@ -133,6 +132,24 @@ class Take : public Expression<Take> {
 template<typename I>
 struct Types<Take, I> {
   using Output = iterator::Take<I>;
+};
+
+class Drop : public Expression<Drop> {
+ public:
+  explicit Drop(size_t count) : count(count) {}
+
+  template<typename I>
+  OutputType<Drop, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Drop<I>(count, std::move(iter));
+  }
+
+ private:
+  size_t count;
+};
+
+template<typename I>
+struct Types<Drop, I> {
+  using Output = iterator::Drop<I>;
 };
 
 template<typename E1, typename E2>

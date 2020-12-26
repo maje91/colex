@@ -336,4 +336,32 @@ struct Types<Take<I>> {
   using Output = OutputType<I>;
 };
 
+template<typename I>
+class Drop : public Iterator<Drop<I>> {
+ public:
+  explicit Drop(size_t count, Iterator<I>&& iter) : underlying(static_cast<I&&>(iter)) {
+    for (size_t i = 0; i < count && !underlying.at_end(); underlying.advance(), ++i);
+  }
+
+  [[nodiscard]] bool at_end() {
+    return underlying.at_end();
+  }
+
+  [[nodiscard]] OutputType<Drop<I>> content() {
+    return underlying.content();
+  }
+
+  void advance() {
+    underlying.advance();
+  }
+
+ private:
+  I underlying;
+};
+
+template<typename I>
+struct Types<Drop<I>> {
+  using Output = OutputType<I>;
+};
+
 }// namespace colex::iterator

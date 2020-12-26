@@ -105,6 +105,16 @@ TEST_CASE("take") {
   CHECK(ys.size() == 2);
 }
 
+TEST_CASE("drop") {
+  auto xs = move_int_vec();
+  auto ys = iter(std::move(xs)) | drop(2) | collect<std::vector>();
+
+  CHECK(ys[0] == 2);
+  CHECK(ys[1] == 3);
+  CHECK(ys[2] == 4);
+  CHECK(ys.size() == 3);
+}
+
 TEST_CASE("conversion") {
   auto xs = move_int_vec();
   xs.emplace_back(3);

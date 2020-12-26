@@ -181,6 +181,17 @@ auto ys = std::move(xs) | take(2) | collect<std::vector>();
 // ys == std::vector<int> {1, 2}
 ```
 
+### `drop(size_t count)`
+Skips iterating over the first `count` input elements.
+
+This example extracts the two last elements of the vector
+```cpp
+std::vector<int> xs {1, 2, 3, 4};
+auto ys = std::move(xs) | drop(2) | collect<std::vector>();
+
+// ys == std::vector<int> {3, 4}
+```
+
 ## Supported Collections
 ### `std::vector`
 Can be used as both input and output.
