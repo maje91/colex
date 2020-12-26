@@ -8,9 +8,13 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic")
 
 project(colex)
 
-set(SRC iterators.hpp expressions.hpp colex.hpp colex.cpp)
+set(INC iterators.hpp expressions.hpp colex.hpp)
+set(SRC colex.cpp)
 set(TEST_SRC doctest.cpp doctest.hpp)
 
-add_library(colex SHARED ${SRC})
+add_library(colex SHARED ${INC} ${SRC})
 
-add_executable(tests ${SRC} ${TEST_SRC})
+add_executable(tests ${INC} ${SRC} ${TEST_SRC})
+
+install(TARGETS colex DESTINATION lib)
+install(FILES ${INC} DESTINATION include)

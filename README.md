@@ -20,9 +20,16 @@ add functionality as I need it for other projects.
 I am no C++ expert, and have not verified this claim.
 
 ## Installation
-The library is header-only (so far). Simply clone the
-repo and include `colex.hpp` in your code. Everything
-you need is found under the `colex` namespace.
+Clone the repo and `cd` into it. Then
+```bash
+mkdir build
+cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --target colex
+cmake --install . --prefix /where/to/put/it
+```
+This puts a shared library under `/where/to/put/it/lib` and
+the header files under `/where/to/put/it/include`.
 
 ## Usage
 The library overloads the `|` operator
