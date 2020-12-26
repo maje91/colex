@@ -63,7 +63,7 @@ TEST_CASE("map fold") {
 }
 
 TEST_CASE("move map collect") {
-  auto ys = move_iter(move_int_vec()) | map(square) | collect<std::vector>();
+  auto ys = iter(move_int_vec()) | map(square) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
   CHECK(ys[1] == 1);
@@ -84,7 +84,7 @@ TEST_CASE("filter") {
 TEST_CASE("flat_map") {
   std::vector<char> xs { 'a', 'b', 'c' };
   auto ys = iter(xs)
-            | flat_map([](char x) { return move_iter(std::array<char, 2>{x, ' '}); })
+            | flat_map([](char x) { return iter(std::array<char, 2>{x, ' '}); })
             | collect<std::vector>();
 
   CHECK(ys[0] == 'a');
@@ -108,8 +108,8 @@ TEST_CASE("conversion") {
   CHECK(xs[5] == 3);
   CHECK(xs.size() == 6);
 
-  auto set = move_iter(std::move(xs)) | collect<std::set>();
-  xs = move_iter(std::move(set)) | collect<std::vector>();
+  auto set = iter(std::move(xs)) | collect<std::set>();
+  xs = iter(std::move(set)) | collect<std::vector>();
 
   CHECK(xs[0] == 0);
   CHECK(xs[1] == 1);
@@ -131,7 +131,7 @@ TEST_CASE("array input map") {
 
 TEST_CASE("array conversion") {
   std::array<MoveInt, 3> xs{1, 2, 3};
-  auto ys = move_iter(std::move(xs)) | collect<std::vector>();
+  auto ys = iter(std::move(xs)) | collect<std::vector>();
 
   CHECK(ys[0] == 1);
   CHECK(ys[1] == 2);

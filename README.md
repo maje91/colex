@@ -65,10 +65,8 @@ auto y = iter(xs) | sum_of_squares;
 ### Avoiding copies
 If the elements of our collections are large, we should
 avoid copying. This can be achieved by either referencing
-the elements in the first expression, or moving them
-by creating a `move_iter`. `move_iter` takes its collection
-by rvalue reference, and moves it into the iterator.
-The original collection is thus no longer usable.
+the elements in the first expression, or moving the
+collection by passing an rvalue to `iter`.
 
 Using references:
 ```cpp
@@ -87,12 +85,12 @@ std::vector<BigThing> xs = some_big_things();
 // The transformation takes BigThing by value
 auto transformation = map([](BigThing x) { return do_something_else(x); });
 
-auto ys = move_iter(std::move(xs)) | transformation | collect<std::vector>();
+auto ys = iter(std::move(xs)) | transformation | collect<std::vector>();
 
 // We can do the same by passing collection directly from the function
 // std::move is then unecessarry since the result of
 // some_big_things() is already an rvalue
-auto zs = move_iter(some_big_things()) | transformation | collect<std::vector>();
+auto zs = iter(some_big_things()) | transformation | collect<std::vector>();
 ```
 
 ### Converting between collections
@@ -104,8 +102,8 @@ this can of course also be done after applying some expressions.
 std::vector<int> xs { 1, 1, 2, 2, 3, 3 };
 
 // We use std::move to avoid copies.
-std::set<int> set = move_iter(std::move(xs)) | collect<std::set>();
-std::vector<int> uniques = move_iter(std::move(set)) | collect<std::vector>();
+std::set<int> set = iter(std::move(xs)) | collect<std::set>();
+std::vector<int> uniques = iter(std::move(set)) | collect<std::vector>();
 
 // uniques == { 1, 2, 3 }
 ```
@@ -118,7 +116,7 @@ This example doubles all elements of `xs`.
 ```cpp
 std::vector<int> xs = {1, 2, 3};
 
-auto ys = xs 
+auto ys = iter(xs) 
         | map([](int x) { 2 * x; }) 
         | collect<std::vector>();
 
@@ -136,7 +134,8 @@ This example sums all elements of `xs`.
 ```cpp
 std::vector<int> xs = {1, 2, 3};
 
-auto y = xs | fold(0, [](int acc, int x) { return acc + x; });
+auto y = iter(xs) 
+       | fold(0, [](int acc, int x) { return acc + x; });
 
 // y == 6
 ```
@@ -149,7 +148,7 @@ This example only keeps numbers that are smaller than 2
 ```cpp
 std::vector<int> xs {0, 1, 2, 3, 4};
 
-auto ys = std::move(xs)
+auto ys = iter(xs)
         | filter([](int x) { return x < 2; })
         | collect<std::vector>();
 
@@ -160,13 +159,13 @@ auto ys = std::move(xs)
 Applies a function `F: T x -> Iterator<U>`. The returned
 iterators are concatenated and their elements are iterated over.
 
-This examples puts a space after the letters of the original
+This examples puts a space after letters of the original
 iterator.
 ```cpp
 std::vector<char> xs { 'a', 'b', 'c' };
 auto ys = iter(xs)
-| flat_map([](char x) { return move_iter(std::array<char, 2>{x, ' '}); })
-| collect<std::vector>();
+        | flat_map([](char x) { return move_iter(std::array<char, 2>{x, ' '}); })
+        | collect<std::vector>();
 
 // ys == std::vector<char> { 'a', ' ', 'b', ' ', 'c', ' ' }
 ```

@@ -55,7 +55,7 @@ iterator::STL<C, T> iter(const C<T> &collection) {
 }
 
 template<template<typename...> typename C, typename T>
-iterator::STLMove<C, T> move_iter(C<T> &&collection) {
+iterator::STLMove<C, T> iter(C<T> &&collection) {
   return iterator::STLMove<C, T>(std::move(collection));
 }
 
@@ -65,7 +65,7 @@ iterator::Array<T, N> iter(const std::array<T, N> &collection) {
 }
 
 template<typename T, size_t N>
-iterator::ArrayMove<T, N> move_iter(std::array<T, N> &&collection) {
+iterator::ArrayMove<T, N> iter(std::array<T, N> &&collection) {
   return iterator::ArrayMove<T, N>(std::move(collection));
 }
 
