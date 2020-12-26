@@ -1,7 +1,7 @@
 # Colex
 
-This library provides a set of common transformations
-and reductions over the C++ STL collections. We refer to
+This C++ library provides a set of common transformations
+and reductions over the STL collections. We refer to
 transformations and reductions as _expressions_. Expressions
 can be arbitrarily combined in advance before being applied
 to a collection. To apply an expression to a collection,
@@ -12,7 +12,7 @@ we refer to that collection as an _input_.
 If the final expression is _not_ a reduction,
 it can be _collected_. By this, we mean that the expression is evaluated
 and put into another collection, which we refer to as an _output_.
-All expressions are lazily applied and compiles down to 
+All expressions are lazily applied and compile down to 
 optimal for loops*. This is a work in progress, and I'll
 add functionality as I need it for other projects.
 
@@ -83,14 +83,14 @@ Using moves:
 std::vector<BigThing> xs = some_big_things();
 
 // The transformation takes BigThing by value
-auto transformation = map([](BigThing x) { return do_something_else(x); });
+auto transformation = map([](BigThing x) { return do_something_owned(x); });
 
 auto ys = iter(std::move(xs)) | transformation | collect<std::vector>();
 
-// We can do the same by passing collection directly from the function
+// We can do the same by passing the collection directly from the function
 // std::move is then unecessarry since the result of
 // some_big_things() is already an rvalue
-auto zs = iter(some_big_things()) | transformation | collect<std::vector>();
+auto ys = iter(some_big_things()) | transformation | collect<std::vector>();
 ```
 
 ### Converting between collections
@@ -164,7 +164,7 @@ iterator.
 ```cpp
 std::vector<char> xs { 'a', 'b', 'c' };
 auto ys = iter(xs)
-        | flat_map([](char x) { return move_iter(std::array<char, 2>{x, ' '}); })
+        | flat_map([](char x) { return iter(std::array<char, 2>{x, ' '}); })
         | collect<std::vector>();
 
 // ys == std::vector<char> { 'a', ' ', 'b', ' ', 'c', ' ' }

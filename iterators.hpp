@@ -18,12 +18,28 @@ template<typename I>
 using OutputType = typename Types<I>::Output;
 
 /**
- * Base for all iterators
+ * Base for all iterators. To consume an iterator
+ * the functions must be called in this order:
+ * `at_end`, `content`, `advance`. Repeat until
+ * `at_end` is true. All three functions are allowed
+ * to modify internal state, and implementations assume that
+ * the call order is adhered to. As an example, this for loop is
+ * valid
+ * ```cpp
+ * for (; iter.at_end(); iter.advance()) {
+ *   auto x = iter.content();
+ *   // Do something with x
+ * }
+ * ```
+ *
+ * The docstrings for the functions in `Iterator` describe their
+ * intended meanings, and might not necessarily be true for all
+ * implementations.
  */
 template<typename I>
 struct Iterator {
   /**
-   * Returns true if there are no more element to iterate over
+   * Returns true if there are no more element to iterate over.
    */
   [[nodiscard]] bool at_end() {
     return static_cast<I &>(*this).at_end();
@@ -31,18 +47,13 @@ struct Iterator {
 
   /**
    * Returns the current item. Must not be called if `at_end() == true`.
-   * In some iterators this will advance the iterator as well.
-   * Can only be called once per element.
    */
   [[nodiscard]] OutputType<I> content() {
     return static_cast<I &>(*this).content();
   }
 
   /**
-   * Advances the iterator. In some iterators, this implementation
-   * is empty and `content` advances the iterator instead. However,
-   * to cover all bases, both method must be called to ensure that
-   * iterator advances
+   * Advances the iterator.
    */
   void advance() {
     static_cast<I &>(*this).advance();
@@ -131,6 +142,9 @@ struct Types<STLMove<C, T>> {
   using Output = T;
 };
 
+/**
+ * An iterator over a borrowed array
+ */
 template<typename T, size_t N>
 class Array : public Iterator<Array<T, N>> {
  public:
@@ -158,6 +172,9 @@ struct Types<Array<T, N>> {
   using Output = const T &;
 };
 
+/**
+ * An iterator over an owned array
+ */
 template<typename T, size_t N>
 class ArrayMove : public Iterator<ArrayMove<T, N>> {
  public:

@@ -28,6 +28,9 @@ expression::Fold<T, F> fold(T initial, F func) {
   return expression::Fold<T, F>(initial, std::move(func));
 }
 
+/**
+ * Creates a flat map expression. See README for details
+ */
 template<typename F>
 expression::FlatMap<F> flat_map(F func) {
   return expression::FlatMap<F>(func);
@@ -49,21 +52,33 @@ expression::OutputType<E, I> operator|(iterator::Iterator<I> &&iter, const expre
   return expr.apply(std::move(iter));
 }
 
+/**
+ * Creates an iterator from a collection
+ */
 template<template<typename...> typename C, typename T>
 iterator::STL<C, T> iter(const C<T> &collection) {
   return iterator::STL<C, T>(collection);
 }
 
+/**
+ * Creates an iterator from a collection. The collection is moved
+ */
 template<template<typename...> typename C, typename T>
 iterator::STLMove<C, T> iter(C<T> &&collection) {
   return iterator::STLMove<C, T>(std::move(collection));
 }
 
+/**
+ * Creates an iterator from an array
+ */
 template<typename T, size_t N>
 iterator::Array<T, N> iter(const std::array<T, N> &collection) {
   return iterator::Array<T, N>(collection);
 }
 
+/**
+ * Creates an iterator from an array. The array is moved
+ */
 template<typename T, size_t N>
 iterator::ArrayMove<T, N> iter(std::array<T, N> &&collection) {
   return iterator::ArrayMove<T, N>(std::move(collection));
