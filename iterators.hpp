@@ -1,5 +1,8 @@
 #pragma once
 
+#include <utility>
+#include <set>
+
 namespace colex::iterator {
 
 /**
@@ -302,6 +305,35 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
 template<typename F, typename I>
 struct Types<FlatMap<F, I>> {
   using Output = OutputType<std::invoke_result_t<F, OutputType<I>>>;
+};
+
+template<typename I>
+class Take : public Iterator<Take<I>> {
+ public:
+  explicit Take(size_t count, Iterator<I>&& iter) : i(0), take_count(count), underlying(static_cast<I&&>(iter)) {}
+
+  [[nodiscard]] bool at_end() {
+    return underlying.at_end() || i == take_count;
+  }
+
+  [[nodiscard]] OutputType<Take<I>> content() {
+    return underlying.content();
+  }
+
+  void advance() {
+    underlying.advance();
+    ++i;
+  }
+
+ private:
+  size_t i;
+  size_t take_count;
+  I underlying;
+};
+
+template<typename I>
+struct Types<Take<I>> {
+  using Output = OutputType<I>;
 };
 
 }// namespace colex::iterator

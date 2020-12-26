@@ -2,6 +2,9 @@
 
 #include "expressions.hpp"
 
+#include <cstddef>
+#include <array>
+
 namespace colex {
 
 /**
@@ -35,6 +38,8 @@ template<typename F>
 expression::FlatMap<F> flat_map(F func) {
   return expression::FlatMap<F>(func);
 }
+
+expression::Take take(size_t count);
 
 /**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.

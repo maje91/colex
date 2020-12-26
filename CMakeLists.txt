@@ -8,10 +8,9 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic")
 
 project(colex)
 
-set(SRC iterators.hpp expressions.hpp colex.hpp)
+set(SRC iterators.hpp expressions.hpp colex.hpp colex.cpp)
 set(TEST_SRC doctest.cpp doctest.hpp)
 
 add_library(colex SHARED ${SRC})
-set_target_properties(colex PROPERTIES LINKER_LANGUAGE CXX)
 
 add_executable(tests ${SRC} ${TEST_SRC})

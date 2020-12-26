@@ -116,6 +116,25 @@ struct Types<FlatMap<F>, I> {
   using Output = iterator::FlatMap<F, I>;
 };
 
+class Take : public Expression<Take> {
+ public:
+  explicit Take(size_t count) : count(count) {}
+
+  template<typename I>
+  OutputType<Take, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Take<I>(count, std::move(iter));
+  }
+
+
+ private:
+  size_t count;
+};
+
+template<typename I>
+struct Types<Take, I> {
+  using Output = iterator::Take<I>;
+};
+
 template<typename E1, typename E2>
 class Composition {
  public:

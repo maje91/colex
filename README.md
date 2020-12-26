@@ -170,6 +170,17 @@ auto ys = iter(xs)
 // ys == std::vector<char> { 'a', ' ', 'b', ' ', 'c', ' ' }
 ```
 
+### `take(size_t count)`
+Stops iterating after the first `count` input elements.
+
+This example extracts the two first elements of the vector
+```cpp
+std::vector<int> xs {1, 2, 3, 4};
+auto ys = std::move(xs) | take(2) | collect<std::vector>();
+
+// ys == std::vector<int> {1, 2}
+```
+
 ## Supported Collections
 ### `std::vector`
 Can be used as both input and output.

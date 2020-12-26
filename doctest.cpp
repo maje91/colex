@@ -96,6 +96,15 @@ TEST_CASE("flat_map") {
   CHECK(ys.size() == 6);
 }
 
+TEST_CASE("take") {
+  auto xs = move_int_vec();
+  auto ys = iter(std::move(xs)) | take(2) | collect<std::vector>();
+
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 1);
+  CHECK(ys.size() == 2);
+}
+
 TEST_CASE("conversion") {
   auto xs = move_int_vec();
   xs.emplace_back(3);
