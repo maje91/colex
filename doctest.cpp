@@ -53,12 +53,50 @@ TEST_CASE("map collect") {
   CHECK(ys[4] == 8);
 }
 
-TEST_CASE("map fold") {
+TEST_CASE("composition borrow borrow") {
   auto v = move_int_vec();
 
-  auto sum = fold(10, [](int acc, MoveInt x) { return acc + x.x; });
+  auto sum = [](int acc, MoveInt x) { return acc + x.x; };
 
-  auto value = iter(v) | map(square) | sum;
+  auto folder = fold(10, sum);
+  auto mapper = map(square);
+
+  auto expr = mapper | folder;
+  auto value = iter(v) | expr;
+  CHECK(value == 10 + 1 + 4 + 9 + 16);
+}
+
+TEST_CASE("composition move borrow") {
+  auto v = move_int_vec();
+
+  auto sum = [](int acc, MoveInt x) { return acc + x.x; };
+
+  auto folder = fold(10, sum);
+
+  auto expr = map(square) | folder;
+  auto value = iter(v) | expr;
+  CHECK(value == 10 + 1 + 4 + 9 + 16);
+}
+
+TEST_CASE("composition borrow move") {
+  auto v = move_int_vec();
+
+  auto sum = [](int acc, MoveInt x) { return acc + x.x; };
+
+  auto mapper = map(square);
+
+  auto expr = mapper | fold(10, sum);
+  auto value = iter(v) | expr;
+  CHECK(value == 10 + 1 + 4 + 9 + 16);
+}
+
+TEST_CASE("composition move move") {
+  auto v = move_int_vec();
+
+  auto sum = [](int acc, MoveInt x) { return acc + x.x; };
+
+  auto expr = map(square) | fold(10, sum);
+  auto value = iter(v) | expr;
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
@@ -82,10 +120,8 @@ TEST_CASE("filter") {
 }
 
 TEST_CASE("flat_map") {
-  std::vector<char> xs { 'a', 'b', 'c' };
-  auto ys = iter(xs)
-            | flat_map([](char x) { return iter(std::array<char, 2>{x, ' '}); })
-            | collect<std::vector>();
+  std::vector<char> xs{'a', 'b', 'c'};
+  auto ys = iter(xs) | flat_map([](char x) { return iter(std::array<char, 2>{x, ' '}); }) | collect<std::vector>();
 
   CHECK(ys[0] == 'a');
   CHECK(ys[1] == ' ');
@@ -113,6 +149,15 @@ TEST_CASE("drop") {
   CHECK(ys[1] == 3);
   CHECK(ys[2] == 4);
   CHECK(ys.size() == 3);
+}
+
+TEST_CASE("slice") {
+  auto xs = move_int_vec();
+  auto ys = iter(std::move(xs)) | slice(1, 2) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys.size() == 2);
 }
 
 TEST_CASE("conversion") {

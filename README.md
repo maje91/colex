@@ -176,7 +176,7 @@ Stops iterating after the first `count` input elements.
 This example extracts the two first elements of the vector
 ```cpp
 std::vector<int> xs {1, 2, 3, 4};
-auto ys = std::move(xs) | take(2) | collect<std::vector>();
+auto ys = iter(std::move(xs)) | take(2) | collect<std::vector>();
 
 // ys == std::vector<int> {1, 2}
 ```
@@ -187,9 +187,21 @@ Skips iterating over the first `count` input elements.
 This example extracts the two last elements of the vector
 ```cpp
 std::vector<int> xs {1, 2, 3, 4};
-auto ys = std::move(xs) | drop(2) | collect<std::vector>();
+auto ys = iter(std::move(xs)) | drop(2) | collect<std::vector>();
 
 // ys == std::vector<int> {3, 4}
+```
+
+### `slice(size_t start, size_t count)`
+Iterates over elements with indices in the range `[start, start+count)`.
+
+This example extracts the middle two elements of the vector
+
+```cpp
+std::vector<int> xs {1, 2, 3, 4};
+auto ys = iter(std::move(xs)) | slice(1, 2) | collect<std::vector>();
+
+// ys == std::vector<int> { 2, 3 }
 ```
 
 ## Supported Collections

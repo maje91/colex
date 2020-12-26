@@ -50,11 +50,40 @@ expression::Take take(size_t count);
 expression::Drop drop(size_t count);
 
 /**
+ * Creates a slice expression. See README for details.
+ */
+expression::Composition<expression::Drop, expression::Take> slice(size_t start, size_t count);
+
+/**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.
  */
 template<typename E1, typename E2>
-expression::Composition<E1, E2> operator|(expression::Expression<E1> e1, expression::Expression<E2> e2) {
-  return expression::Composition<E1, E2>(std::move(e1), std::move(e2));
+expression::Composition<E1, E2> operator|(const expression::Expression<E1> &e1, const expression::Expression<E2> &e2) {
+  return expression::Composition<E1, E2>(static_cast<const E1&>(e1), static_cast<const E2&>(e2));
+}
+
+/**
+ * Creates a composition of two expressions. `e1` is applied first, then `e2`.
+ */
+template<typename E1, typename E2>
+expression::Composition<E1, E2> operator|(expression::Expression<E1> &&e1, const expression::Expression<E2> &e2) {
+  return expression::Composition<E1, E2>(static_cast<E1&&>(e1), static_cast<const E2&>(e2));
+}
+
+/**
+ * Creates a composition of two expressions. `e1` is applied first, then `e2`.
+ */
+template<typename E1, typename E2>
+expression::Composition<E1, E2> operator|(const expression::Expression<E1> &e1, expression::Expression<E2> &&e2) {
+  return expression::Composition<E1, E2>(static_cast<const E1&>(e1), static_cast<E2&&>(e2));
+}
+
+/**
+ * Creates a composition of two expressions. `e1` is applied first, then `e2`.
+ */
+template<typename E1, typename E2>
+expression::Composition<E1, E2> operator|(expression::Expression<E1> &&e1, expression::Expression<E2> &&e2) {
+  return expression::Composition<E1, E2>(static_cast<E1&&>(e1), static_cast<E2&&>(e2));
 }
 
 /**

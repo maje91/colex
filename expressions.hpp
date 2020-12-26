@@ -153,13 +153,16 @@ struct Types<Drop, I> {
 };
 
 template<typename E1, typename E2>
-class Composition {
+class Composition : public Expression<Composition<E1, E2>> {
  public:
-  explicit Composition(Expression<E1> e1, Expression<E2> e2) : e1(static_cast<E1 &&>(e1)), e2(static_cast<E2 &&>(e2)) {}
+  explicit Composition(const E1 &e1, const E2 &e2) : e1(e1), e2(e2) {}
+  explicit Composition(E1&& e1, const E2 &e2) : e1(std::move(e1)), e2(e2) {}
+  explicit Composition(const E1 &e1, E2&& e2) : e1(e1), e2(std::move(e2)) {}
+  explicit Composition(E1&& e1, E2&& e2) : e1(std::move(e1)), e2(std::move(e2)) {}
 
   template<typename I>
   OutputType<Composition<E1, E2>, I> apply(iterator::Iterator<I> &&iter) const {
-    e2.apply(e1.apply(std::move(iter)));
+    return e2.apply(e1.apply(std::move(iter)));
   }
 
  private:
@@ -169,7 +172,7 @@ class Composition {
 
 template<typename E1, typename E2, typename I>
 struct Types<Composition<E1, E2>, I> {
-  using Output = OutputType<E2, I>;
+  using Output = OutputType<E2, OutputType<E1, I>>;
 };
 
 }// namespace colex::expression
