@@ -248,4 +248,43 @@ struct Types<Filter<F, I>> {
   using Output = OutputType<I>;
 };
 
+template<typename F, typename I>
+class FlatMap : public Iterator<FlatMap<F, I>> {
+ public:
+  explicit FlatMap(F func, Iterator<I> &&underlying)
+          : outer(static_cast<I &&>(underlying))
+          , inner(func(outer.content()))
+          , func(func)
+  {}
+  FlatMap(const FlatMap &) = delete;
+  FlatMap(FlatMap &&) noexcept = default;
+
+  [[nodiscard]] bool at_end() {
+    return outer.at_end();
+  }
+
+  [[nodiscard]] OutputType<FlatMap<F, I>> content() {
+    return inner.content();
+  }
+
+  void advance() {
+    inner.advance();
+
+    if (inner.at_end()) {
+      outer.advance();
+      inner = func(outer.content());
+    }
+  }
+
+ private:
+  I outer;
+  std::invoke_result_t<F, OutputType<I>> inner;
+  F func;
+};
+
+template<typename F, typename I>
+struct Types<FlatMap<F, I>> {
+  using Output = OutputType<std::invoke_result_t<F, OutputType<I>>>;
+};
+
 }// namespace colex::iterator

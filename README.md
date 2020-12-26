@@ -4,7 +4,10 @@ This library provides a set of common transformations
 and reductions over the C++ STL collections. We refer to
 transformations and reductions as _expressions_. Expressions
 can be arbitrarily combined in advance before being applied
-to a collection. When we apply an expression to a collection,
+to a collection. To apply an expression to a collection,
+we first create an iterator from the collection, and
+then apply the expression to the iterator.
+When we apply an expression to a collection,
 we refer to that collection as an _input_. 
 If the final expression is _not_ a reduction,
 it can be _collected_. By this, we mean that the expression is evaluated
@@ -31,11 +34,13 @@ present.
 ### Square
 In this example we square all elements of a vector
 using `map` and then `collect` them to another vector.
+`iter` creates an iterator that borrows `xs` by const
+reference. Hence, no copies are made.
 ```cpp
 std::vector<int> xs { 1, 2, 3 };
 
-auto ys = xs
-        | map([](int x) { return x * x; }) 
+auto ys = iter(xs)
+        | map([](const int &x) { return x * x; }) 
         | collect<std::vector>();
 
 // ys == std::vector<int> { 1, 4, 9 };
@@ -48,12 +53,12 @@ be combined in advance before applying them to a collection.
 ```cpp
 std::vector<int> xs { 1, 2, 3 };
 
-auto square = map([](int x) { return x * x; });
+auto square = map([](const int& x) { return x * x; });
 auto sum = fold(0, [](int acc, int x) { return acc + x; });
 
 auto sum_of_squares = square | sum;
 
-auto y = xs | sum_of_squares;
+auto y = iter(xs) | sum_of_squares;
 // y == 1 + 4 + 9 (type: int)
 ```
 
@@ -61,7 +66,9 @@ auto y = xs | sum_of_squares;
 If the elements of our collections are large, we should
 avoid copying. This can be achieved by either referencing
 the elements in the first expression, or moving them
-by passing the collection as an `rvalue`.
+by creating a `move_iter`. `move_iter` takes its collection
+by rvalue reference, and moves it into the iterator.
+The original collection is thus no longer usable.
 
 Using references:
 ```cpp
@@ -70,7 +77,7 @@ std::vector<BigThing> xs = some_big_things();
 // The transformation takes BigThing by const reference.
 auto transformation = map([](const BigThing &x) { return do_something(x); });
 
-auto ys = xs | transformation | collect<std::vector>();
+auto ys = iter(xs) | transformation | collect<std::vector>();
 ```
 
 Using moves:
@@ -80,10 +87,12 @@ std::vector<BigThing> xs = some_big_things();
 // The transformation takes BigThing by value
 auto transformation = map([](BigThing x) { return do_something_else(x); });
 
-auto ys = std::move(xs) | transformation | collect<std::vector>();
+auto ys = move_iter(std::move(xs)) | transformation | collect<std::vector>();
 
 // We can do the same by passing collection directly from the function
-auto zs = some_big_things() | transformation | collect<std::vector>();
+// std::move is then unecessarry since the result of
+// some_big_things() is already an rvalue
+auto zs = move_iter(some_big_things()) | transformation | collect<std::vector>();
 ```
 
 ### Converting between collections
@@ -95,15 +104,10 @@ this can of course also be done after applying some expressions.
 std::vector<int> xs { 1, 1, 2, 2, 3, 3 };
 
 // We use std::move to avoid copies.
-std::set<int> set = std::move(xs) | collect<std::set>();
-std::vector<int> uniques = std::move(set) | collect<std::vector>();
+std::set<int> set = move_iter(std::move(xs)) | collect<std::set>();
+std::vector<int> uniques = move_iter(std::move(set)) | collect<std::vector>();
 
-// Can also be done in a single operation
-std::vector<int> uniques = std::move(xs) 
-        | collect<std::set>() 
-        | collect<std::vector>();
-
-// In both cases: uniques == { 1, 2, 3 }
+// uniques == { 1, 2, 3 }
 ```
 
 ## Available Expressions
@@ -150,6 +154,21 @@ auto ys = std::move(xs)
         | collect<std::vector>();
 
 // ys == std::vector<int> {0, 1}
+```
+
+### `flat_map(F func)`
+Applies a function `F: T x -> Iterator<U>`. The returned
+iterators are concatenated and their elements are iterated over.
+
+This examples puts a space after the letters of the original
+iterator.
+```cpp
+std::vector<char> xs { 'a', 'b', 'c' };
+auto ys = iter(xs)
+| flat_map([](char x) { return move_iter(std::array<char, 2>{x, ' '}); })
+| collect<std::vector>();
+
+// ys == std::vector<char> { 'a', ' ', 'b', ' ', 'c', ' ' }
 ```
 
 ## Supported Collections

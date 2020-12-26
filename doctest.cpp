@@ -44,7 +44,7 @@ MoveInt square(const MoveInt &x) { return x.x * x.x; }
 TEST_CASE("map collect") {
   auto v = move_int_vec();
 
-  auto ys = v | map([](const MoveInt &x) { return 2 * x.x; }) | collect<std::vector>();
+  auto ys = iter(v) | map([](const MoveInt &x) { return 2 * x.x; }) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
   CHECK(ys[1] == 2);
@@ -58,12 +58,12 @@ TEST_CASE("map fold") {
 
   auto sum = fold(10, [](int acc, MoveInt x) { return acc + x.x; });
 
-  auto value = v | map(square) | sum;
+  auto value = iter(v) | map(square) | sum;
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
 TEST_CASE("move map collect") {
-  auto ys = move_int_vec() | map(square) | collect<std::vector>();
+  auto ys = move_iter(move_int_vec()) | map(square) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
   CHECK(ys[1] == 1);
@@ -74,14 +74,26 @@ TEST_CASE("move map collect") {
 
 TEST_CASE("filter") {
   auto xs = move_int_vec();
-  auto ys = xs
-            | filter([](const MoveInt &x) { return x < 2; })
-            | map([](const MoveInt& x) { return x.x; })
-            | collect<std::vector>();
+  auto ys = iter(xs) | filter([](const MoveInt &x) { return x < 2; }) | map([](const MoveInt &x) { return x.x; }) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
   CHECK(ys[1] == 1);
   CHECK(ys.size() == 2);
+}
+
+TEST_CASE("flat_map") {
+  std::vector<char> xs { 'a', 'b', 'c' };
+  auto ys = iter(xs)
+            | flat_map([](char x) { return move_iter(std::array<char, 2>{x, ' '}); })
+            | collect<std::vector>();
+
+  CHECK(ys[0] == 'a');
+  CHECK(ys[1] == ' ');
+  CHECK(ys[2] == 'b');
+  CHECK(ys[3] == ' ');
+  CHECK(ys[4] == 'c');
+  CHECK(ys[5] == ' ');
+  CHECK(ys.size() == 6);
 }
 
 TEST_CASE("conversion") {
@@ -96,7 +108,8 @@ TEST_CASE("conversion") {
   CHECK(xs[5] == 3);
   CHECK(xs.size() == 6);
 
-  xs = std::move(xs) | collect<std::set>() | collect<std::vector>();
+  auto set = move_iter(std::move(xs)) | collect<std::set>();
+  xs = move_iter(std::move(set)) | collect<std::vector>();
 
   CHECK(xs[0] == 0);
   CHECK(xs[1] == 1);
@@ -109,7 +122,7 @@ TEST_CASE("conversion") {
 TEST_CASE("array input map") {
   std::array<MoveInt, 3> xs{1, 2, 3};
 
-  auto ys = xs | map(square) | collect<std::vector>();
+  auto ys = iter(xs) | map(square) | collect<std::vector>();
 
   CHECK(ys[0] == 1);
   CHECK(ys[1] == 4);
@@ -118,7 +131,7 @@ TEST_CASE("array input map") {
 
 TEST_CASE("array conversion") {
   std::array<MoveInt, 3> xs{1, 2, 3};
-  auto ys = std::move(xs) | collect<std::vector>();
+  auto ys = move_iter(std::move(xs)) | collect<std::vector>();
 
   CHECK(ys[0] == 1);
   CHECK(ys[1] == 2);
