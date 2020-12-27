@@ -7,8 +7,7 @@ can be arbitrarily combined in advance before being applied
 to a collection. To apply an expression to a collection,
 we first create an iterator from the collection, and
 then apply the expression to the iterator.
-When we apply an expression to a collection,
-we refer to that collection as an _input_. 
+The collection is here referred to as an _input_.
 If the final expression is _not_ a reduction,
 it can be _collected_. By this, we mean that the expression is evaluated
 and put into another collection, which we refer to as an _output_.
