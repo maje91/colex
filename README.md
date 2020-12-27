@@ -130,7 +130,7 @@ auto ys = iter(xs)
 // ys == std::vector<int> {2, 4, 6}
 ```
   
-###`fold(U initial, F func)` 
+### `fold(U initial, F func)` 
 Reduces all input elements to a single value.
 Applies a function `F: (U acc, T x) -> U` where `acc` is the accumulated
 value so far, and `x` is the next input element. The returned value
