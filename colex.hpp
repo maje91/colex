@@ -4,6 +4,7 @@
 
 #include <cstddef>
 #include <array>
+#include <initializer_list>
 
 namespace colex {
 
@@ -124,6 +125,11 @@ iterator::Array<T, N> iter(const std::array<T, N> &collection) {
 template<typename T, size_t N>
 iterator::ArrayMove<T, N> iter(std::array<T, N> &&collection) {
   return iterator::ArrayMove<T, N>(std::move(collection));
+}
+
+template<typename T>
+iterator::STLMove<std::vector, T> iter(std::initializer_list<T>&& xs) {
+  return iterator::STLMove<std::vector, T>(std::move(xs));
 }
 
 /**

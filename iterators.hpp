@@ -1,7 +1,7 @@
 #pragma once
 
-#include <utility>
 #include <set>
+#include <utility>
 
 namespace colex::iterator {
 
@@ -99,7 +99,7 @@ struct Types<STL<C, T>> {
 template<template<typename...> typename C, typename T>
 struct STLMove : public Iterator<STLMove<C, T>> {
  public:
-  explicit STLMove(C<T> &&underlying) : it(underlying.begin()), underlying(std::move(underlying)) {}
+  explicit STLMove(C<T> &&_underlying) : underlying(std::move(_underlying)), it(underlying.begin()) {}
 
   [[nodiscard]] bool at_end() {
     return it == underlying.end();
@@ -114,8 +114,8 @@ struct STLMove : public Iterator<STLMove<C, T>> {
   }
 
  private:
-  typename C<T>::iterator it;
   C<T> underlying;
+  typename C<T>::iterator it;
 };
 
 /**
@@ -272,10 +272,7 @@ template<typename F, typename I>
 class FlatMap : public Iterator<FlatMap<F, I>> {
  public:
   explicit FlatMap(F func, Iterator<I> &&underlying)
-          : outer(static_cast<I &&>(underlying))
-          , inner(func(outer.content()))
-          , func(func)
-  {}
+      : outer(static_cast<I &&>(underlying)), inner(func(outer.content())), func(func) {}
   FlatMap(const FlatMap &) = delete;
   FlatMap(FlatMap &&) noexcept = default;
 
@@ -310,7 +307,7 @@ struct Types<FlatMap<F, I>> {
 template<typename I>
 class Take : public Iterator<Take<I>> {
  public:
-  explicit Take(size_t count, Iterator<I>&& iter) : i(0), take_count(count), underlying(static_cast<I&&>(iter)) {}
+  explicit Take(size_t count, Iterator<I> &&iter) : i(0), take_count(count), underlying(static_cast<I &&>(iter)) {}
 
   [[nodiscard]] bool at_end() {
     return underlying.at_end() || i == take_count;
@@ -339,8 +336,9 @@ struct Types<Take<I>> {
 template<typename I>
 class Drop : public Iterator<Drop<I>> {
  public:
-  explicit Drop(size_t count, Iterator<I>&& iter) : underlying(static_cast<I&&>(iter)) {
-    for (size_t i = 0; i < count && !underlying.at_end(); underlying.advance(), ++i);
+  explicit Drop(size_t count, Iterator<I> &&iter) : underlying(static_cast<I &&>(iter)) {
+    for (size_t i = 0; i < count && !underlying.at_end(); underlying.advance(), ++i)
+      ;
   }
 
   [[nodiscard]] bool at_end() {

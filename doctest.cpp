@@ -100,7 +100,7 @@ TEST_CASE("composition move move") {
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
-TEST_CASE("move map collect") {
+TEST_CASE("rvalue map collect") {
   auto ys = iter(move_int_vec()) | map(square) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
@@ -112,7 +112,7 @@ TEST_CASE("move map collect") {
 
 TEST_CASE("filter") {
   auto xs = move_int_vec();
-  auto ys = iter(xs) | filter([](const MoveInt &x) { return x < 2; }) | map([](const MoveInt &x) { return x.x; }) | collect<std::vector>();
+  auto ys = iter(std::move(xs)) | filter([](MoveInt x) { return x < 2; }) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
   CHECK(ys[1] == 1);
@@ -120,8 +120,7 @@ TEST_CASE("filter") {
 }
 
 TEST_CASE("flat_map") {
-  std::vector<char> xs{'a', 'b', 'c'};
-  auto ys = iter(xs) | flat_map([](char x) { return iter(std::array<char, 2>{x, ' '}); }) | collect<std::vector>();
+  auto ys = iter({'a', 'b', 'c'}) | flat_map([](char x) { return iter({x, ' '}); }) | collect<std::vector>();
 
   CHECK(ys[0] == 'a');
   CHECK(ys[1] == ' ');
@@ -159,6 +158,15 @@ TEST_CASE("slice") {
   CHECK(ys[1] == 2);
   CHECK(ys.size() == 2);
 }
+
+TEST_CASE("initializer list") {
+  auto ys = iter({1, 2, 3}) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+}
+
 
 TEST_CASE("conversion") {
   auto xs = move_int_vec();

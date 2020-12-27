@@ -55,17 +55,18 @@ auto ys = iter(xs)
 
 ### Sum of squares
 In this example we square all elements of a vector using `map`
-and sum them using `fold`. We also show that expressions can
+and sum them using `fold`. We show that expressions can
 be combined in advance before applying them to a collection.
+Additionally, we show that iterators can be created from
+`std::initializer_list`s. This is especially useful in
+the `flat_map` expression.
 ```cpp
-std::vector<int> xs { 1, 2, 3 };
-
 auto square = map([](const int& x) { return x * x; });
 auto sum = fold(0, [](int acc, int x) { return acc + x; });
 
 auto sum_of_squares = square | sum;
 
-auto y = iter(xs) | sum_of_squares;
+auto y = iter({1, 2, 3}) | sum_of_squares;
 // y == 1 + 4 + 9 (type: int)
 ```
 
@@ -117,7 +118,7 @@ std::vector<int> uniques = iter(std::move(set)) | collect<std::vector>();
 
 ## Available Expressions
 ### `map(F func)`
-Applies a function `F: T x -> U` to all input elements.
+Applies a function `F: (T x) -> U` to all input elements.
 
 This example doubles all elements of `xs`.
 ```cpp
@@ -132,7 +133,7 @@ auto ys = iter(xs)
   
 ###`fold(U initial, F func)` 
 Reduces all input elements to a single value.
-Applies a function `F: U acc, T x -> U` where `acc` is the accumulated
+Applies a function `F: (U acc, T x) -> U` where `acc` is the accumulated
 value so far, and `x` is the next input element. The returned value
 is used as `acc` for the next element. For the first element,
 `acc` is set to `initial`.
@@ -149,7 +150,7 @@ auto y = iter(xs)
 
 ### `filter(F predicate)`
 Removes all input elements that doesn't satisfy the
-predicate `F: T x -> bool`.
+predicate `F: (T x) -> bool`.
 
 This example only keeps numbers that are smaller than 2
 ```cpp
@@ -163,7 +164,7 @@ auto ys = iter(xs)
 ```
 
 ### `flat_map(F func)`
-Applies a function `F: T x -> Iterator<U>`. The returned
+Applies a function `F: (T x) -> Iterator<U>`. The returned
 iterators are concatenated and their elements are iterated over.
 
 This examples puts a space after letters of the original
@@ -171,7 +172,7 @@ iterator.
 ```cpp
 std::vector<char> xs { 'a', 'b', 'c' };
 auto ys = iter(xs)
-        | flat_map([](char x) { return iter(std::array<char, 2>{x, ' '}); })
+        | flat_map([](char x) { return iter({x, ' '}); })
         | collect<std::vector>();
 
 // ys == std::vector<char> { 'a', ' ', 'b', ' ', 'c', ' ' }
@@ -220,3 +221,6 @@ Can be used as both input and output.
 
 ### `std::array`
 Can only be used as input.
+
+### `std::initializer_list`
+Can only be used as input. Converted to an `std::vector` internally
