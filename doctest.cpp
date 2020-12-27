@@ -4,6 +4,7 @@
 #include "colex.hpp"
 
 #include <array>
+#include <unordered_set>
 
 using namespace colex;
 
@@ -208,4 +209,30 @@ TEST_CASE("array conversion") {
   CHECK(ys[0] == 1);
   CHECK(ys[1] == 2);
   CHECK(ys[2] == 3);
+}
+
+TEST_CASE("unordered_set borrow") {
+  std::unordered_set<int> xs{1, 2, 3};
+
+  std::unordered_set<int> unordered_set = iter(xs) | map([](int x) { return 2 * x; }) | collect<std::unordered_set>();
+  std::set<int> set = iter(std::move(unordered_set)) | collect<std::set>();
+  std::vector<int> ys = iter(std::move(set)) | collect<std::vector>();
+
+  CHECK(ys[0] == 2);
+  CHECK(ys[1] == 4);
+  CHECK(ys[2] == 6);
+  CHECK(ys.size() == 3);
+}
+
+TEST_CASE("unordered_set move") {
+  std::unordered_set<int> xs{1, 2, 3};
+
+  std::unordered_set<int> unordered_set = iter(std::move(xs)) | map([](int x) { return 2 * x; }) | collect<std::unordered_set>();
+  std::set<int> set = iter(std::move(unordered_set)) | collect<std::set>();
+  std::vector<int> ys = iter(std::move(set)) | collect<std::vector>();
+
+  CHECK(ys[0] == 2);
+  CHECK(ys[1] == 4);
+  CHECK(ys[2] == 6);
+  CHECK(ys.size() == 3);
 }

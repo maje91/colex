@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <array>
 #include <initializer_list>
+#include <unordered_set>
 
 namespace colex {
 
@@ -141,9 +142,6 @@ struct collect;
 template<>
 struct collect<std::vector> {};
 
-template<>
-struct collect<std::set> {};
-
 /**
  * Collects an iterator into an `std::vector`.
  */
@@ -158,12 +156,32 @@ std::vector<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, col
   return std::move(result);
 }
 
+template<>
+struct collect<std::set> {};
+
 /**
  * Collects an iterator into an `std::set`.
  */
 template<typename I>
 std::set<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::set> &&) {
   std::set<iterator::OutputType<I>> result;
+
+  for (;!iter.at_end(); iter.advance()) {
+    result.insert(std::move(iter.content()));
+  }
+
+  return std::move(result);
+}
+
+template<>
+struct collect<std::unordered_set> {};
+
+/**
+ * Collects an iterator into an `std::unordered_set`.
+ */
+template<typename I>
+std::unordered_set<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::unordered_set> &&) {
+  std::unordered_set<iterator::OutputType<I>> result;
 
   for (;!iter.at_end(); iter.advance()) {
     result.insert(std::move(iter.content()));

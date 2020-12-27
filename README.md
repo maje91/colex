@@ -219,6 +219,9 @@ Can be used as both input and output.
 ### `std::set`
 Can be used as both input and output.
 
+### `std::unordered_set`
+Can be used as both input and output.
+
 ### `std::array`
 Can only be used as input.
 
