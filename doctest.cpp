@@ -3,9 +3,6 @@
 
 #include "colex.hpp"
 
-#include <array>
-#include <unordered_set>
-
 using namespace colex;
 
 struct MoveInt {
@@ -234,5 +231,55 @@ TEST_CASE("unordered_set move") {
   CHECK(ys[0] == 2);
   CHECK(ys[1] == 4);
   CHECK(ys[2] == 6);
+  CHECK(ys.size() == 3);
+}
+
+TEST_CASE("map borrow") {
+  std::map<int, int> xs{{1, 2}, {2, 4}, {3, 6}};
+
+  std::map<int, int> _map = iter(xs) | map([](std::pair<int, int> x) { return std::make_pair(x.first, 2 * x.second); }) | collect<std::map>();
+  std::vector<int> ys = iter(_map) | map([](std::pair<int, int> x) { return x.first; }) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys.size() == 3);
+}
+
+TEST_CASE("map move") {
+  std::map<int, int> xs{{1, 2}, {2, 4}, {3, 6}};
+
+  std::map<int, int> _map = iter(std::move(xs)) | map([](std::pair<int, int> x) { return std::make_pair(x.first, 2 * x.second); }) | collect<std::map>();
+  std::vector<int> ys = iter(_map) | map([](std::pair<int, int> x) { return x.first; }) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys.size() == 3);
+}
+
+TEST_CASE("unordered_map borrow") {
+  std::unordered_map<int, int> xs{{1, 2}, {2, 4}, {3, 6}};
+
+  std::unordered_map<int, int> unordered_map = iter(xs) | map([](std::pair<int, int> x) { return std::make_pair(x.first, 2 * x.second); }) | collect<std::unordered_map>();
+  std::map<int, int> _map = iter(std::move(unordered_map)) | collect<std::map>();
+  std::vector<int> ys = iter(_map) | map([](std::pair<int, int> x) { return x.first; }) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys.size() == 3);
+}
+
+TEST_CASE("unordered_map move") {
+  std::unordered_map<int, int> xs{{1, 2}, {2, 4}, {3, 6}};
+
+  std::unordered_map<int, int> unordered_map = iter(std::move(xs)) | map([](std::pair<int, int> x) { return std::make_pair(x.first, 2 * x.second); }) | collect<std::unordered_map>();
+  std::map<int, int> _map = iter(std::move(unordered_map)) | collect<std::map>();
+  std::vector<int> ys = iter(_map) | map([](std::pair<int, int> x) { return x.first; }) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
   CHECK(ys.size() == 3);
 }

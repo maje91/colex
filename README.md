@@ -222,6 +222,14 @@ Can be used as both input and output.
 ### `std::unordered_set`
 Can be used as both input and output.
 
+### `std::map`
+Can be used as both input and output. Elements must
+be `std::pair`s.
+
+### `std::unordered_map`
+Can be used as both input and output. Elements must
+be `std::pair`s.
+
 ### `std::array`
 Can only be used as input.
 

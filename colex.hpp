@@ -6,6 +6,8 @@
 #include <array>
 #include <initializer_list>
 #include <unordered_set>
+#include <map>
+#include <unordered_map>
 
 namespace colex {
 
@@ -113,6 +115,38 @@ iterator::STLMove<C, T> iter(C<T> &&collection) {
 }
 
 /**
+ * Creates an iterator from an `std::map`.
+ */
+template<typename K, typename V>
+iterator::STLPair<std::map, K, V> iter(const std::map<K, V> &collection) {
+  return iterator::STLPair<std::map, K, V>(collection);
+}
+
+/**
+ * Creates an iterator from an `std::map`. The map is moved.
+ */
+template<typename K, typename V>
+iterator::STLPairMove<std::map, K, V> iter(std::map<K, V> &&collection) {
+  return iterator::STLPairMove<std::map, K, V>(std::move(collection));
+}
+
+/**
+ * Creates an iterator from an `std::unordered_map`.
+ */
+template<typename K, typename V>
+iterator::STLPair<std::unordered_map, K, V> iter(const std::unordered_map<K, V> &collection) {
+  return iterator::STLPair<std::unordered_map, K, V>(collection);
+}
+
+/**
+ * Creates an iterator from an `std::unordered_map`. The map is moved.
+ */
+template<typename K, typename V>
+iterator::STLPairMove<std::unordered_map, K, V> iter(std::unordered_map<K, V> &&collection) {
+  return iterator::STLPairMove<std::unordered_map, K, V>(std::move(collection));
+}
+
+/**
  * Creates an iterator from an array
  */
 template<typename T, size_t N>
@@ -182,6 +216,42 @@ struct collect<std::unordered_set> {};
 template<typename I>
 std::unordered_set<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::unordered_set> &&) {
   std::unordered_set<iterator::OutputType<I>> result;
+
+  for (;!iter.at_end(); iter.advance()) {
+    result.insert(std::move(iter.content()));
+  }
+
+  return std::move(result);
+}
+
+template<>
+struct collect<std::map> {};
+
+/**
+ * Collects an iterator into an `std::map`.
+ */
+template<typename I>
+std::map<typename iterator::OutputType<I>::first_type, typename iterator::OutputType<I>::second_type>
+        operator|(iterator::Iterator<I> &&iter, collect<std::map> &&) {
+  std::map<typename iterator::OutputType<I>::first_type, typename iterator::OutputType<I>::second_type> result;
+
+  for (;!iter.at_end(); iter.advance()) {
+    result.insert(std::move(iter.content()));
+  }
+
+  return std::move(result);
+}
+
+template<>
+struct collect<std::unordered_map> {};
+
+/**
+ * Collects an iterator into an `std::unordered_map`.
+ */
+template<typename I>
+std::unordered_map<typename iterator::OutputType<I>::first_type, typename iterator::OutputType<I>::second_type>
+operator|(iterator::Iterator<I> &&iter, collect<std::unordered_map> &&) {
+  std::unordered_map<typename iterator::OutputType<I>::first_type, typename iterator::OutputType<I>::second_type> result;
 
   for (;!iter.at_end(); iter.advance()) {
     result.insert(std::move(iter.content()));

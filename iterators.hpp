@@ -146,6 +146,66 @@ struct Types<STLMove<C, T>> {
 };
 
 /**
+ * An iterator over an STL collection where the elements are pairs.
+ */
+template<template<typename...> typename C, typename K, typename V>
+class STLPair : public Iterator<STLPair<C, K, V>> {
+ public:
+  explicit STLPair(const C<K, V> &underlying) : it(underlying.begin()), end(underlying.end()) {}
+
+  [[nodiscard]] bool at_end() {
+    return it == end;
+  }
+
+  [[nodiscard]] OutputType<STLPair<C, K, V>> content() {
+    return *it;
+  }
+
+  void advance() {
+    ++it;
+  }
+
+ private:
+  typename C<K, V>::const_iterator it;
+  typename C<K, V>::const_iterator end;
+};
+
+template<template<typename...> typename C, typename K, typename V>
+struct Types<STLPair<C, K, V>> {
+  using Output = std::pair<K, V>;
+};
+
+/**
+ * An iterator over an owned STL collection where the elements are pairs.
+ */
+template<template<typename...> typename C, typename K, typename V>
+class STLPairMove : public Iterator<STLPairMove<C, K, V>> {
+ public:
+  explicit STLPairMove(C<K, V> &&_underlying) : underlying(std::move(_underlying)), it(underlying.begin()) {}
+
+  [[nodiscard]] bool at_end() {
+    return it == underlying.end();
+  }
+
+  [[nodiscard]] OutputType<STLPairMove<C, K, V>> content() {
+    return std::move(*it);
+  }
+
+  void advance() {
+    ++it;
+  }
+
+ private:
+  C<K, V> underlying;
+  typename C<K, V>::iterator it;
+};
+
+template<template<typename...> typename C, typename K, typename V>
+struct Types<STLPairMove<C, K, V>> {
+  using Output = std::pair<K, V>;
+};
+
+/**
  * An iterator over a borrowed array
  */
 template<typename T, size_t N>
