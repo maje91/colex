@@ -341,3 +341,12 @@ TEST_CASE("unordered_map move") {
   CHECK(ys[2] == 3);
   CHECK(ys.size() == 3);
 }
+
+TEST_CASE("range") {
+  auto ys = range(1, 4) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys.size() == 3);
+}

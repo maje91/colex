@@ -180,9 +180,20 @@ iterator::ArrayMove<T, N> iter(std::array<T, N> &&collection) {
   return iterator::ArrayMove<T, N>(std::move(collection));
 }
 
+/**
+ * Creates an iterator from an initializer list.
+ */
 template<typename T>
 iterator::STLMove<std::vector, T> iter(std::initializer_list<T>&& xs) {
   return iterator::STLMove<std::vector, T>(std::move(xs));
+}
+
+/**
+ * Creates an iterator over the range `[begin, end)`.
+ */
+template<typename T>
+iterator::Range<T> range(T begin, T end) {
+  return iterator::Range(begin, end);
 }
 
 /**

@@ -418,4 +418,27 @@ struct Types<Pairwise<I>> {
   using Output = std::pair<OutputType<I>, OutputType<I>>;
 };
 
+template<typename T>
+class Range : public Iterator<Range<T>> {
+ public:
+  explicit Range(T begin, T end) : i(begin), end(end) {}
+
+  [[nodiscard]] std::optional<OutputType<Range>> next() {
+    if (i < end) {
+      return i++;
+    }
+
+    return {};
+  }
+
+ private:
+  T i;
+  T end;
+};
+
+template<typename T>
+struct Types<Range<T>> {
+  using Output = T;
+};
+
 }// namespace colex::iterator
