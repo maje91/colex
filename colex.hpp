@@ -54,6 +54,19 @@ expression::Take take(size_t count);
 expression::Drop drop(size_t count);
 
 /**
+ * Creates an enumerate expression. See README for details
+ */
+expression::Enumerate enumerate();
+
+/**
+ * Creates a for each expression. See README for details
+ */
+template<typename F>
+expression::ForEach<F> for_each(F func) {
+  return expression::ForEach<F>(func);
+}
+
+/**
  * Creates a slice expression. See README for details.
  */
 expression::Composition<expression::Drop, expression::Take> slice(size_t start, size_t count);

@@ -152,6 +152,42 @@ struct Types<Drop, I> {
   using Output = iterator::Drop<I>;
 };
 
+class Enumerate : public Expression<Enumerate> {
+ public:
+  explicit Enumerate() {}
+
+  template<typename I>
+  OutputType<Enumerate, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Enumerate<I>(std::move(iter));
+  }
+};
+
+template<typename I>
+struct Types<Enumerate, I> {
+  using Output = iterator::Enumerate<I>;
+};
+
+template<typename F>
+class ForEach : public Expression<ForEach<F>> {
+ public:
+  explicit ForEach(F func) : func(func) {}
+
+  template<typename I>
+  OutputType<ForEach<F>, I> apply(iterator::Iterator<I> &&iter) const {
+    for (;!iter.at_end(); iter.advance()) {
+      func(std::move(iter.content()));
+    }
+  }
+
+ private:
+  F func;
+};
+
+template<typename F, typename I>
+struct Types<ForEach<F>, I> {
+  using Output = void;
+};
+
 template<typename E1, typename E2>
 class Composition : public Expression<Composition<E1, E2>> {
  public:

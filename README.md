@@ -211,6 +211,24 @@ auto ys = iter(std::move(xs)) | slice(1, 2) | collect<std::vector>();
 // ys == std::vector<int> { 2, 3 }
 ```
 
+### `enumerate()`
+Adds an index to the elements of the expression.
+
+This example adds indices to the elements of the input
+```cpp
+auto y = iter({1, 1, 1}) | enumerate() | collect<std::vector>();
+
+// y == std::vector<std::pair<size_t, int> {{0, 1}, {1, 1}, {2, 1}}
+```
+
+### `for_each(F func)`
+Applies a funcion `F: T x -> void` to all elements.
+
+This example prints the elements of the input
+```cpp
+iter({1, 2, 3}) | for_each([](int x) { std::cout << x << std::endl; });
+```
+
 ## Supported Collections
 ### `std::vector`
 Can be used as both input and output.

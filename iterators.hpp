@@ -76,7 +76,7 @@ class STL : public Iterator<STL<C, T>> {
   }
 
   [[nodiscard]] OutputType<STL<C, T>> content() {
-    return *it;
+    return std::reference_wrapper(*it);
   }
 
   void advance() {
@@ -90,7 +90,7 @@ class STL : public Iterator<STL<C, T>> {
 
 template<template<typename...> typename C, typename T>
 struct Types<STL<C, T>> {
-  using Output = const T &;
+  using Output = std::reference_wrapper<const T>;
 };
 
 /**
@@ -420,6 +420,34 @@ class Drop : public Iterator<Drop<I>> {
 template<typename I>
 struct Types<Drop<I>> {
   using Output = OutputType<I>;
+};
+
+template<typename I>
+class Enumerate : public Iterator<Enumerate<I>> {
+ public:
+  explicit Enumerate(Iterator<I> &&iter) : underlying(static_cast<I&&>(iter)), i(0) {}
+
+  [[nodiscard]] bool at_end() {
+    return underlying.at_end();
+  }
+
+  [[nodiscard]] OutputType<Enumerate<I>> content() {
+    return std::make_pair(i, underlying.content());
+  }
+
+  void advance() {
+    ++i;
+    underlying.advance();
+  }
+
+ private:
+  I underlying;
+  size_t i;
+};
+
+template<typename I>
+struct Types<Enumerate<I>> {
+  using Output = std::pair<size_t, OutputType<I>>;
 };
 
 }// namespace colex::iterator

@@ -129,6 +129,26 @@ TEST_CASE("flat_map") {
   CHECK(ys.size() == 6);
 }
 
+TEST_CASE("enumerate") {
+  auto ys = iter({2, 3, 4}) | enumerate() | collect<std::vector>();
+
+  CHECK(ys[0].first == 0);
+  CHECK(ys[0].second == 2);
+  CHECK(ys[1].first == 1);
+  CHECK(ys[1].second == 3);
+  CHECK(ys[2].first == 2);
+  CHECK(ys[2].second == 4);
+}
+
+TEST_CASE("for each") {
+  std::vector<int> xs{2, 4, 6};
+  iter(xs) | enumerate() | for_each([](std::pair<size_t, const int &> pair) {
+    if (pair.first == 0) { CHECK(pair.second == 2); }
+    if (pair.first == 1) { CHECK(pair.second == 4); }
+    if (pair.first == 2) { CHECK(pair.second == 6); }
+  });
+}
+
 TEST_CASE("take") {
   auto xs = move_int_vec();
   auto ys = iter(std::move(xs)) | take(2) | collect<std::vector>();
