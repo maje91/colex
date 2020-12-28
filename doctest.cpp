@@ -9,7 +9,7 @@ struct MoveInt {
   MoveInt(int x) : x(x) {}
   MoveInt(const MoveInt &) = delete;
   MoveInt(MoveInt &&) noexcept = default;
-  MoveInt& operator=(MoveInt &&) = default;
+  MoveInt &operator=(MoveInt &&) = default;
 
   int x;
 };
@@ -119,31 +119,40 @@ TEST_CASE("filter") {
 }
 
 TEST_CASE("flat_map") {
-  auto ys = iter({'a', 'b', 'c'}) | flat_map([](char x) { return iter({x, ' '}); }) | collect<std::vector>();
+  auto xs = move_int_vec();
+  auto ys = iter(move_int_vec()) | flat_map([](MoveInt x) { return iter(std::array<MoveInt, 2>{std::move(x), MoveInt(0)}); }) | collect<std::vector>();
 
-  CHECK(ys[0] == 'a');
-  CHECK(ys[1] == ' ');
-  CHECK(ys[2] == 'b');
-  CHECK(ys[3] == ' ');
-  CHECK(ys[4] == 'c');
-  CHECK(ys[5] == ' ');
-  CHECK(ys.size() == 6);
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 0);
+  CHECK(ys[2] == 1);
+  CHECK(ys[3] == 0);
+  CHECK(ys[4] == 2);
+  CHECK(ys[5] == 0);
+  CHECK(ys[6] == 3);
+  CHECK(ys[7] == 0);
+  CHECK(ys[8] == 4);
+  CHECK(ys[9] == 0);
+  CHECK(ys.size() == 10);
 }
 
 TEST_CASE("enumerate") {
-  auto ys = iter({2, 3, 4}) | enumerate() | collect<std::vector>();
+  auto ys = iter(move_int_vec()) | enumerate() | collect<std::vector>();
 
   CHECK(ys[0].first == 0);
-  CHECK(ys[0].second == 2);
+  CHECK(ys[0].second == 0);
   CHECK(ys[1].first == 1);
-  CHECK(ys[1].second == 3);
+  CHECK(ys[1].second == 1);
   CHECK(ys[2].first == 2);
-  CHECK(ys[2].second == 4);
+  CHECK(ys[2].second == 2);
+  CHECK(ys[3].first == 3);
+  CHECK(ys[3].second == 3);
+  CHECK(ys[4].first == 4);
+  CHECK(ys[4].second == 4);
 }
 
 TEST_CASE("for each") {
-  std::vector<int> xs{2, 4, 6};
-  iter(xs) | enumerate() | for_each([](std::pair<size_t, const int &> pair) {
+  std::array<MoveInt, 3> xs{2, 4, 6};
+  iter(xs) | enumerate() | for_each([](std::pair<size_t, const MoveInt &> pair) {
     if (pair.first == 0) { CHECK(pair.second == 2); }
     if (pair.first == 1) { CHECK(pair.second == 4); }
     if (pair.first == 2) { CHECK(pair.second == 6); }

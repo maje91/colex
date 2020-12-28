@@ -270,7 +270,7 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
     auto outer_content = outer.next();
 
     if (outer_content.has_value()) {
-      inner = func(outer_content.value());
+      inner = func(std::move(outer_content.value()));
     }
   }
   FlatMap(const FlatMap &) = delete;
@@ -285,7 +285,7 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
       auto outer_content = outer.next();
 
       if (outer_content.has_value()) {
-        inner = func(outer_content.value());
+        inner = func(std::move(outer_content.value()));
         return next();
       }
     }
@@ -371,7 +371,7 @@ class Enumerate : public Iterator<Enumerate<I>> {
     auto content = underlying.next();
 
     if (content.has_value()) {
-      return std::make_pair(i++, content.value());
+      return std::make_pair(i++, std::move(content.value()));
     }
 
     return {};
