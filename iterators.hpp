@@ -365,7 +365,7 @@ struct Types<Drop<I>> {
 template<typename I>
 class Enumerate : public Iterator<Enumerate<I>> {
  public:
-  explicit Enumerate(Iterator<I> &&iter) : underlying(static_cast<I&&>(iter)), i(0) {}
+  explicit Enumerate(Iterator<I> &&iter) : underlying(static_cast<I &&>(iter)), i(0) {}
 
   [[nodiscard]] std::optional<OutputType<Enumerate<I>>> next() {
     auto content = underlying.next();
@@ -385,6 +385,37 @@ class Enumerate : public Iterator<Enumerate<I>> {
 template<typename I>
 struct Types<Enumerate<I>> {
   using Output = std::pair<size_t, OutputType<I>>;
+};
+
+template<typename I>
+class Pairwise : public Iterator<Pairwise<I>> {
+ public:
+  explicit Pairwise(Iterator<I> &&iter) : underlying(static_cast<I&&>(iter)) {
+    a = underlying.next();
+    b = underlying.next();
+  }
+
+  [[nodiscard]] std::optional<OutputType<Pairwise<I>>> next() {
+    if (a.has_value() && b.has_value()) {
+      auto content = std::make_pair(a.value(), b.value());
+      a = b;
+      b = underlying.next();
+
+      return content;
+    }
+
+    return {};
+  }
+
+ private:
+  I underlying;
+  std::optional<OutputType<I>> a;
+  std::optional<OutputType<I>> b;
+};
+
+template<typename I>
+struct Types<Pairwise<I>> {
+  using Output = std::pair<OutputType<I>, OutputType<I>>;
 };
 
 }// namespace colex::iterator

@@ -72,6 +72,11 @@ expression::ForEach<F> for_each(F func) {
 expression::Composition<expression::Drop, expression::Take> slice(size_t start, size_t count);
 
 /**
+ * Creates a pairwise expression. See README for details
+ */
+expression::Pairwise pairwise();
+
+/**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.
  */
 template<typename E1, typename E2>

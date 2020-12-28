@@ -229,6 +229,18 @@ This example prints the elements of the input
 iter({1, 2, 3}) | for_each([](int x) { std::cout << x << std::endl; });
 ```
 
+### `pairwise()`
+Iterates over adjacent pairs instead of single elements
+
+This example collects pairs of elements into a vector
+```cpp
+auto ys = iter({1, 2, 3, 4})
+    | pairwise()
+    | collect<std::vector>();
+
+// ys == std::vector<std::pair<int, int>> {{1, 2}, {2, 3}, {3, 4}}
+```
+
 ## Supported Collections
 ### `std::vector`
 Can be used as both input and output.

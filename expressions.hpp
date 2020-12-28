@@ -167,6 +167,22 @@ struct Types<Enumerate, I> {
   using Output = iterator::Enumerate<I>;
 };
 
+class Pairwise : public Expression<Pairwise> {
+ public:
+  explicit Pairwise() {}
+
+  template<typename I>
+  OutputType<Pairwise, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Pairwise<I>(std::move(iter));
+  }
+};
+
+template<typename I>
+struct Types<Pairwise, I> {
+  using Output = iterator::Pairwise<I>;
+};
+
+
 template<typename F>
 class ForEach : public Expression<ForEach<F>> {
  public:

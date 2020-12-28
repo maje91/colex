@@ -18,4 +18,8 @@ expression::Composition<expression::Drop, expression::Take> slice(size_t start, 
   return expression::Composition<expression::Drop, expression::Take>(drop(start), take(count));
 }
 
+expression::Pairwise pairwise() {
+  return expression::Pairwise();
+}
+
 }
