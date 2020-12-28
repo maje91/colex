@@ -9,6 +9,7 @@ struct MoveInt {
   MoveInt(int x) : x(x) {}
   MoveInt(const MoveInt &) = delete;
   MoveInt(MoveInt &&) noexcept = default;
+  MoveInt& operator=(MoveInt &&) = default;
 
   int x;
 };
@@ -110,7 +111,7 @@ TEST_CASE("rvalue map collect") {
 
 TEST_CASE("filter") {
   auto xs = move_int_vec();
-  auto ys = iter(std::move(xs)) | filter([](MoveInt x) { return x < 2; }) | collect<std::vector>();
+  auto ys = iter(std::move(xs)) | filter([](const MoveInt &x) { return x < 2; }) | collect<std::vector>();
 
   CHECK(ys[0] == 0);
   CHECK(ys[1] == 1);

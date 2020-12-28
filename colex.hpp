@@ -196,8 +196,8 @@ template<typename I>
 std::vector<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::vector> &&) {
   std::vector<iterator::OutputType<I>> result;
 
-  for (;!iter.at_end(); iter.advance()) {
-    result.push_back(std::move(iter.content()));
+  for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    result.push_back(std::move(content.value()));
   }
 
   return std::move(result);
@@ -213,8 +213,8 @@ template<typename I>
 std::set<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::set> &&) {
   std::set<iterator::OutputType<I>> result;
 
-  for (;!iter.at_end(); iter.advance()) {
-    result.insert(std::move(iter.content()));
+  for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    result.insert(std::move(content.value()));
   }
 
   return std::move(result);
@@ -230,8 +230,8 @@ template<typename I>
 std::unordered_set<iterator::OutputType<I>> operator|(iterator::Iterator<I> &&iter, collect<std::unordered_set> &&) {
   std::unordered_set<iterator::OutputType<I>> result;
 
-  for (;!iter.at_end(); iter.advance()) {
-    result.insert(std::move(iter.content()));
+  for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    result.insert(std::move(content.value()));
   }
 
   return std::move(result);
@@ -248,8 +248,8 @@ std::map<typename iterator::OutputType<I>::first_type, typename iterator::Output
         operator|(iterator::Iterator<I> &&iter, collect<std::map> &&) {
   std::map<typename iterator::OutputType<I>::first_type, typename iterator::OutputType<I>::second_type> result;
 
-  for (;!iter.at_end(); iter.advance()) {
-    result.insert(std::move(iter.content()));
+  for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    result.insert(std::move(content.value()));
   }
 
   return std::move(result);
@@ -266,8 +266,8 @@ std::unordered_map<typename iterator::OutputType<I>::first_type, typename iterat
 operator|(iterator::Iterator<I> &&iter, collect<std::unordered_map> &&) {
   std::unordered_map<typename iterator::OutputType<I>::first_type, typename iterator::OutputType<I>::second_type> result;
 
-  for (;!iter.at_end(); iter.advance()) {
-    result.insert(std::move(iter.content()));
+  for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    result.insert(std::move(content.value()));
   }
 
   return std::move(result);

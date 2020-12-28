@@ -21,45 +21,15 @@ template<typename I>
 using OutputType = typename Types<I>::Output;
 
 /**
- * Base for all iterators. To consume an iterator
- * the functions must be called in this order:
- * `at_end`, `content`, `advance`. Repeat until
- * `at_end` is true. All three functions are allowed
- * to modify internal state, and implementations assume that
- * the call order is adhered to. As an example, this for loop is
- * valid
- * ```cpp
- * for (; iter.at_end(); iter.advance()) {
- *   auto x = iter.content();
- *   // Do something with x
- * }
- * ```
- *
- * The docstrings for the functions in `Iterator` describe their
- * intended meanings, and might not necessarily be true for all
- * implementations.
+ * Base for all iterators
  */
 template<typename I>
 struct Iterator {
   /**
-   * Returns true if there are no more element to iterate over.
+   * Returns the next item. None if the iterator is exhausted.
    */
-  [[nodiscard]] bool at_end() {
-    return static_cast<I &>(*this).at_end();
-  }
-
-  /**
-   * Returns the current item. Must not be called if `at_end() == true`.
-   */
-  [[nodiscard]] OutputType<I> content() {
-    return static_cast<I &>(*this).content();
-  }
-
-  /**
-   * Advances the iterator.
-   */
-  void advance() {
-    static_cast<I &>(*this).advance();
+  [[nodiscard]] std::optional<OutputType<I>> next() {
+    return static_cast<I &>(*this).next();
   }
 };
 
@@ -71,16 +41,12 @@ class STL : public Iterator<STL<C, T>> {
  public:
   explicit STL(const C<T> &underlying) : it(underlying.begin()), end(underlying.end()) {}
 
-  [[nodiscard]] bool at_end() {
-    return it == end;
-  }
+  [[nodiscard]] std::optional<OutputType<STL<C, T>>> next() {
+    if (it != end) {
+      return std::reference_wrapper(*(it++));
+    }
 
-  [[nodiscard]] OutputType<STL<C, T>> content() {
-    return std::reference_wrapper(*it);
-  }
-
-  void advance() {
-    ++it;
+    return {};
   }
 
  private:
@@ -101,16 +67,12 @@ struct STLMove : public Iterator<STLMove<C, T>> {
  public:
   explicit STLMove(C<T> &&_underlying) : underlying(std::move(_underlying)), it(underlying.begin()) {}
 
-  [[nodiscard]] bool at_end() {
-    return it == underlying.end();
-  }
+  [[nodiscard]] std::optional<OutputType<STLMove<C, T>>> next() {
+    if (it != underlying.end()) {
+      return std::move(*(it++));
+    }
 
-  [[nodiscard]] OutputType<STLMove<C, T>> content() {
-    return std::move(*it);
-  }
-
-  void advance() {
-    ++it;
+    return {};
   }
 
  private:
@@ -126,15 +88,13 @@ struct STLMove<std::set, T> : public Iterator<STLMove<std::set, T>> {
  public:
   explicit STLMove(std::set<T> &&underlying) : underlying(std::move(underlying)) {}
 
-  [[nodiscard]] bool at_end() {
-    return underlying.empty();
-  }
+  [[nodiscard]] std::optional<OutputType<STLMove<std::set, T>>> next() {
+    if (!underlying.empty()) {
+      return std::move(underlying.extract(underlying.begin()).value());
+    }
 
-  [[nodiscard]] OutputType<STLMove<std::set, T>> content() {
-    return std::move(underlying.extract(underlying.begin()).value());
+    return {};
   }
-
-  void advance() {}
 
  private:
   std::set<T> underlying;
@@ -153,16 +113,12 @@ class STLPair : public Iterator<STLPair<C, K, V>> {
  public:
   explicit STLPair(const C<K, V> &underlying) : it(underlying.begin()), end(underlying.end()) {}
 
-  [[nodiscard]] bool at_end() {
-    return it == end;
-  }
+  [[nodiscard]] std::optional<OutputType<STLPair<C, K, V>>> next() {
+    if (it != end) {
+      return *(it++);
+    }
 
-  [[nodiscard]] OutputType<STLPair<C, K, V>> content() {
-    return *it;
-  }
-
-  void advance() {
-    ++it;
+    return {};
   }
 
  private:
@@ -183,16 +139,12 @@ class STLPairMove : public Iterator<STLPairMove<C, K, V>> {
  public:
   explicit STLPairMove(C<K, V> &&_underlying) : underlying(std::move(_underlying)), it(underlying.begin()) {}
 
-  [[nodiscard]] bool at_end() {
-    return it == underlying.end();
-  }
+  [[nodiscard]] std::optional<OutputType<STLPairMove<C, K, V>>> next() {
+    if (it != underlying.end()) {
+      return std::move(*(it++));
+    }
 
-  [[nodiscard]] OutputType<STLPairMove<C, K, V>> content() {
-    return std::move(*it);
-  }
-
-  void advance() {
-    ++it;
+    return {};
   }
 
  private:
@@ -213,16 +165,12 @@ class Array : public Iterator<Array<T, N>> {
  public:
   explicit Array(const std::array<T, N> &underlying) : i(0), underlying(underlying) {}
 
-  [[nodiscard]] bool at_end() {
-    return i == N;
-  }
+  [[nodiscard]] std::optional<OutputType<Array<T, N>>> next() {
+    if (i < N) {
+      return underlying[i++];
+    }
 
-  [[nodiscard]] OutputType<Array<T, N>> content() {
-    return underlying[i];
-  }
-
-  void advance() {
-    ++i;
+    return {};
   }
 
  private:
@@ -232,7 +180,7 @@ class Array : public Iterator<Array<T, N>> {
 
 template<typename T, size_t N>
 struct Types<Array<T, N>> {
-  using Output = const T &;
+  using Output = std::reference_wrapper<const T>;
 };
 
 /**
@@ -243,16 +191,12 @@ class ArrayMove : public Iterator<ArrayMove<T, N>> {
  public:
   explicit ArrayMove(std::array<T, N> &&underlying) : i(0), underlying(std::move(underlying)) {}
 
-  [[nodiscard]] bool at_end() {
-    return i == N;
-  }
+  [[nodiscard]] std::optional<OutputType<ArrayMove<T, N>>> next() {
+    if (i < N) {
+      return std::move(underlying[i++]);
+    }
 
-  [[nodiscard]] OutputType<ArrayMove<T, N>> content() {
-    return std::move(underlying[i]);
-  }
-
-  void advance() {
-    ++i;
+    return {};
   }
 
  private:
@@ -272,16 +216,14 @@ class Map : public Iterator<Map<F, I>> {
   Map(const Map &) = delete;
   Map(Map &&) noexcept = default;
 
-  [[nodiscard]] bool at_end() {
-    return underlying.at_end();
-  }
+  [[nodiscard]] std::optional<OutputType<Map<F, I>>> next() {
+    auto content = underlying.next();
 
-  [[nodiscard]] OutputType<Map<F, I>> content() {
-    return func(underlying.content());
-  }
+    if (content.has_value()) {
+      return func(content.value());
+    }
 
-  void advance() {
-    underlying.advance();
+    return {};
   }
 
  private:
@@ -301,21 +243,14 @@ class Filter : public Iterator<Filter<F, I>> {
   Filter(const Filter &) = delete;
   Filter(Filter &&) noexcept = default;
 
-  [[nodiscard]] bool at_end() {
-    while (!underlying.at_end()) {
-      if (predicate(content())) { break; }
-      advance();
+  [[nodiscard]] std::optional<OutputType<Filter<F, I>>> next() {
+    for (auto content = underlying.next(); content.has_value(); content = underlying.next()) {
+      if (predicate(content.value())) {
+        return std::move(content.value());
+      }
     }
 
-    return underlying.at_end();
-  }
-
-  [[nodiscard]] OutputType<Filter<F, I>> content() {
-    return underlying.content();
-  }
-
-  void advance() {
-    return underlying.advance();
+    return {};
   }
 
  private:
@@ -331,17 +266,31 @@ struct Types<Filter<F, I>> {
 template<typename F, typename I>
 class FlatMap : public Iterator<FlatMap<F, I>> {
  public:
-  explicit FlatMap(F func, Iterator<I> &&underlying)
-      : outer(static_cast<I &&>(underlying)), inner(func(outer.content())), func(func) {}
+  explicit FlatMap(F func, Iterator<I> &&underlying) : outer(static_cast<I &&>(underlying)), func(func) {
+    auto outer_content = outer.next();
+
+    if (outer_content.has_value()) {
+      inner = func(outer_content.value());
+    }
+  }
   FlatMap(const FlatMap &) = delete;
   FlatMap(FlatMap &&) noexcept = default;
 
-  [[nodiscard]] bool at_end() {
-    return outer.at_end();
-  }
+  [[nodiscard]] std::optional<OutputType<FlatMap<F, I>>> next() {
+    if (inner.has_value()) {
+      auto inner_content = inner.value().next();
 
-  [[nodiscard]] OutputType<FlatMap<F, I>> content() {
-    return inner.content();
+      if (inner_content.has_value()) { return inner_content; }
+
+      auto outer_content = outer.next();
+
+      if (outer_content.has_value()) {
+        inner = func(outer_content.value());
+        return next();
+      }
+    }
+
+    return {};
   }
 
   void advance() {
@@ -355,7 +304,7 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
 
  private:
   I outer;
-  std::invoke_result_t<F, OutputType<I>> inner;
+  std::optional<std::invoke_result_t<F, OutputType<I>>> inner;
   F func;
 };
 
@@ -369,17 +318,15 @@ class Take : public Iterator<Take<I>> {
  public:
   explicit Take(size_t count, Iterator<I> &&iter) : i(0), take_count(count), underlying(static_cast<I &&>(iter)) {}
 
-  [[nodiscard]] bool at_end() {
-    return underlying.at_end() || i == take_count;
-  }
+  [[nodiscard]] std::optional<OutputType<Take<I>>> next() {
+    auto content = underlying.next();
 
-  [[nodiscard]] OutputType<Take<I>> content() {
-    return underlying.content();
-  }
+    if (content.has_value() && i < take_count) {
+      ++i;
+      return content;
+    }
 
-  void advance() {
-    underlying.advance();
-    ++i;
+    return {};
   }
 
  private:
@@ -397,20 +344,13 @@ template<typename I>
 class Drop : public Iterator<Drop<I>> {
  public:
   explicit Drop(size_t count, Iterator<I> &&iter) : underlying(static_cast<I &&>(iter)) {
-    for (size_t i = 0; i < count && !underlying.at_end(); underlying.advance(), ++i)
-      ;
+    for (size_t i = 0; i < count; ++i) {
+      if (!underlying.next().has_value()) { break; }
+    }
   }
 
-  [[nodiscard]] bool at_end() {
-    return underlying.at_end();
-  }
-
-  [[nodiscard]] OutputType<Drop<I>> content() {
-    return underlying.content();
-  }
-
-  void advance() {
-    underlying.advance();
+  [[nodiscard]] std::optional<OutputType<Drop<I>>> next() {
+    return underlying.next();
   }
 
  private:
@@ -427,17 +367,14 @@ class Enumerate : public Iterator<Enumerate<I>> {
  public:
   explicit Enumerate(Iterator<I> &&iter) : underlying(static_cast<I&&>(iter)), i(0) {}
 
-  [[nodiscard]] bool at_end() {
-    return underlying.at_end();
-  }
+  [[nodiscard]] std::optional<OutputType<Enumerate<I>>> next() {
+    auto content = underlying.next();
 
-  [[nodiscard]] OutputType<Enumerate<I>> content() {
-    return std::make_pair(i, underlying.content());
-  }
+    if (content.has_value()) {
+      return std::make_pair(i++, content.value());
+    }
 
-  void advance() {
-    ++i;
-    underlying.advance();
+    return {};
   }
 
  private:

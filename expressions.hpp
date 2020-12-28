@@ -80,8 +80,8 @@ class Fold : public Expression<Fold<T, F>> {
   T apply(iterator::Iterator<I> &&iter) const {
     T result = initial;
 
-    for (;!iter.at_end(); iter.advance()) {
-      result = func(std::move(result), std::move(iter.content()));
+    for (auto content = iter.next() ; content.has_value(); content = iter.next()) {
+      result = func(std::move(result), std::move(content.value()));
     }
 
     return result;
@@ -174,8 +174,8 @@ class ForEach : public Expression<ForEach<F>> {
 
   template<typename I>
   OutputType<ForEach<F>, I> apply(iterator::Iterator<I> &&iter) const {
-    for (;!iter.at_end(); iter.advance()) {
-      func(std::move(iter.content()));
+    for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+      func(std::move(content.value()));
     }
   }
 
