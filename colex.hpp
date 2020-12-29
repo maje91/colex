@@ -77,6 +77,14 @@ expression::Composition<expression::Drop, expression::Take> slice(size_t start, 
 expression::Pairwise pairwise();
 
 /**
+ * Creates a chunk map expression. See README for details.
+ */
+template<typename E>
+expression::ChunkMap<E> chunk_map(size_t size, E expr) {
+  return expression::ChunkMap<E>(size, expr);
+}
+
+/**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.
  */
 template<typename E1, typename E2>

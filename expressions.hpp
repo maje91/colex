@@ -182,6 +182,25 @@ struct Types<Pairwise, I> {
   using Output = iterator::Pairwise<I>;
 };
 
+template<typename E>
+class ChunkMap : public Expression<ChunkMap<E>> {
+ public:
+  explicit ChunkMap(size_t size, E expr) : size(size), expr(expr) {}
+
+  template<typename I>
+  OutputType<ChunkMap, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::ChunkMap<E, I>(size, expr, std::move(iter));
+  }
+
+ private:
+  size_t size;
+  E expr;
+};
+
+template<typename E, typename I>
+struct Types<ChunkMap<E>, I> {
+  using Output = iterator::ChunkMap<E, I>;
+};
 
 template<typename F>
 class ForEach : public Expression<ForEach<F>> {

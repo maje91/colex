@@ -241,6 +241,21 @@ auto ys = iter({1, 2, 3, 4})
 // ys == std::vector<std::pair<int, int>> {{1, 2}, {2, 3}, {3, 4}}
 ```
 
+### `chunk_map(size_t size, E expr)`
+Splits the input iterator into an iterator of
+inner iterators with `size` elements each.
+Applies the expression `expr` to each inner
+iterator
+
+This example sums adjacent numbers
+```cpp
+auto ys = iter({1, 2, 3, 4, 5})
+        | chunk_map(2, fold(0, std::plus()))
+        | collect<std::vector>();
+
+// ys == std::vector<int> { 3, 7, 5 }
+```
+
 ## Supported Collections
 ### `std::vector`
 Can be used as both input and output.
