@@ -517,4 +517,32 @@ struct Types<Zip<I1, I2>> {
   using Output = std::pair<OutputType<I1>, OutputType<I2>>;
 };
 
+template<typename I1, typename I2>
+class Concat : public Iterator<Concat<I1, I2>> {
+ public:
+  explicit Concat(Iterator<I1> &&left, Iterator<I2> &&right)
+          : left(static_cast<I1&&>(left)), right(static_cast<I2&&>(right)) {}
+
+  [[nodiscard]] bool is_exhausted() const {
+    return right.is_exhausted();
+  }
+
+  [[nodiscard]] std::optional<OutputType<Concat<I1, I2>>> next() {
+    if (!left.is_exhausted()) {
+      return left.next();
+    }
+
+    return right.next();
+  }
+
+ private:
+  I1 left;
+  I2 right;
+};
+
+template<typename I1, typename I2>
+struct Types<Concat<I1, I2>> {
+  using Output = OutputType<I1>;
+};
+
 }// namespace colex::iterator

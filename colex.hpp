@@ -205,6 +205,14 @@ iterator::Zip<I1, I2> zip(iterator::Iterator<I1> &&left, iterator::Iterator<I2> 
 }
 
 /**
+ * Creates a concat iterator from two iterators. See README for details
+ */
+template<typename I1, typename I2>
+iterator::Concat<I1, I2> concat(iterator::Iterator<I1> &&left, iterator::Iterator<I2> &&right) {
+  return iterator::Concat<I1, I2>(std::move(left), std::move(right));
+}
+
+/**
  * Creates an iterator over the range `[begin, end)`.
  */
 template<typename T>
