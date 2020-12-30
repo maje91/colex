@@ -47,13 +47,15 @@ struct Types<Filter<F>, I> {
 template<typename T, typename F>
 class Fold : public Expression<Fold<T, F>> {
  public:
-  explicit Fold(T initial, F func) : func(std::move(func)), initial(std::move(initial)) {}
+  explicit Fold(T initial, F func)
+      : func(std::move(func)), initial(std::move(initial)) {}
 
   template<typename I>
   T apply(iterator::Iterator<I> &&iter) const {
     T result = initial;
 
-    for (auto content = iter.next() ; content.has_value(); content = iter.next()) {
+    for (auto content = iter.next(); content.has_value();
+         content = iter.next()) {
       result = func(std::move(result), std::move(content.value()));
     }
 
@@ -182,7 +184,8 @@ class ForEach : public Expression<ForEach<F>> {
 
   template<typename I>
   OutputType<ForEach<F>, I> apply(iterator::Iterator<I> &&iter) const {
-    for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    for (auto content = iter.next(); content.has_value();
+         content = iter.next()) {
       func(std::move(content.value()));
     }
   }

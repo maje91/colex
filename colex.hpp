@@ -197,6 +197,14 @@ iterator::STLMove<std::vector, T> iter(std::initializer_list<T>&& xs) {
 }
 
 /**
+ * Creates a zip iterator from two iterators. See README for details
+ */
+template<typename I1, typename I2>
+iterator::Zip<I1, I2> zip(iterator::Iterator<I1> &&left, iterator::Iterator<I2> &&right) {
+  return iterator::Zip<I1, I2>(std::move(left), std::move(right));
+}
+
+/**
  * Creates an iterator over the range `[begin, end)`.
  */
 template<typename T>

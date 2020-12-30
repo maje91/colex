@@ -223,6 +223,21 @@ TEST_CASE("initializer list") {
   CHECK(ys[2] == 3);
 }
 
+TEST_CASE("zip") {
+  std::array<MoveInt, 3> left{1, 2, 3};
+  std::array<MoveInt, 3> right{4, 5, 6};
+
+  auto ys = zip(iter(std::move(left)), iter(std::move(right)))
+          | collect<std::vector>();
+
+  CHECK(ys[0].first == 1);
+  CHECK(ys[0].second == 4);
+  CHECK(ys[1].first == 2);
+  CHECK(ys[1].second == 5);
+  CHECK(ys[2].first == 3);
+  CHECK(ys[2].second == 6);
+}
+
 
 TEST_CASE("conversion") {
   auto xs = move_int_vec();

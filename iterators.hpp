@@ -488,4 +488,33 @@ struct Types<ChunkMap<E, I>> {
   using Output = expression::OutputType<E, I>;
 };
 
+template<typename I1, typename I2>
+class Zip : public Iterator<Zip<I1, I2>> {
+ public:
+  explicit Zip(Iterator<I1> &&left, Iterator<I2> &&right)
+      : left(static_cast<I1 &&>(left)), right(static_cast<I2 &&>(right)) {}
+
+  [[nodiscard]] bool is_exhausted() const {
+    return left.is_exhausted() || right.is_exhausted();
+  }
+
+  [[nodiscard]] std::optional<OutputType<Zip<I1, I2>>> next() {
+    if (!is_exhausted()) {
+      return std::make_pair(std::move(left.next().value()),
+                            std::move(right.next().value()));
+    }
+
+    return {};
+  }
+
+ private:
+  I1 left;
+  I2 right;
+};
+
+template<typename I1, typename I2>
+struct Types<Zip<I1, I2>> {
+  using Output = std::pair<OutputType<I1>, OutputType<I2>>;
+};
+
 }// namespace colex::iterator
