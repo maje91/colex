@@ -8,7 +8,7 @@ set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic")
 
 project(colex)
 
-set(INC iterators.hpp expressions.hpp colex.hpp)
+set(INC iterators.hpp expressions.hpp colex.hpp iterator_interface.hpp expression_interface.hpp)
 set(SRC colex.cpp)
 set(TEST_SRC doctest.cpp doctest.hpp)
 
