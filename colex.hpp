@@ -8,6 +8,7 @@
 #include <unordered_set>
 #include <map>
 #include <unordered_map>
+#include <vector>
 
 namespace colex {
 
