@@ -6,6 +6,7 @@
 #include <set>
 #include <utility>
 #include <array>
+#include <functional>
 
 namespace colex::iterator {
 
