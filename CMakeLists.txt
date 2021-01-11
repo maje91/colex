@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.16)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_COMPILER clang)
@@ -20,4 +20,4 @@ add_library(${LIB_NAME} SHARED ${INC} ${SRC})
 add_executable(${TESTS_NAME} ${INC} ${SRC} ${TEST_SRC})
 
 install(TARGETS ${LIB_NAME} DESTINATION lib)
-install(FILES ${INC} DESTINATION include)
+install(FILES ${INC} DESTINATION include/${LIB_NAME})
