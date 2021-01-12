@@ -51,7 +51,7 @@ class Fold : public Expression<Fold<T, F>> {
       : func(std::move(func)), initial(std::move(initial)) {}
 
   template<typename I>
-  T apply(iterator::Iterator<I> &&iter) const {
+  OutputType<Fold<T, F>, I> apply(iterator::Iterator<I> &&iter) const {
     T result = initial;
 
     for (auto content = iter.next(); content.has_value();
@@ -70,6 +70,31 @@ class Fold : public Expression<Fold<T, F>> {
 template<typename T, typename F, typename I>
 struct Types<Fold<T, F>, I> {
   using Output = T;
+};
+
+template<typename F>
+class Fold1 : public Expression<Fold1<F>> {
+ public:
+  explicit Fold1(F func) : func(func) {}
+
+  template<typename I>
+  OutputType<Fold1<F>, I> apply(iterator::Iterator<I> &&iter) const {
+    OutputType<Fold1<F>, I> result = iter.next().value();
+
+    for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+      result = func(std::move(result), std::move(content.value()));
+    }
+
+    return result;
+  }
+
+ private:
+  F func;
+};
+
+template<typename F, typename I>
+struct Types<Fold1<F>, I> {
+  using Output = iterator::OutputType<I>;
 };
 
 template<typename F>

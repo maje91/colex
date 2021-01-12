@@ -37,6 +37,14 @@ expression::Fold<T, F> fold(T initial, F func) {
 }
 
 /**
+ * Creates a fold1 expression. See README for details
+ */
+template<typename F>
+expression::Fold1<F> fold1(F func) {
+  return expression::Fold1<F>(std::move(func));
+}
+
+/**
  * Creates a flat map expression. See README for details
  */
 template<typename F>

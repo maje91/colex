@@ -20,6 +20,8 @@ bool operator==(const MoveInt &a, const MoveInt &b) { return a.x == b.x; }
 
 bool operator<(const MoveInt &a, const MoveInt &b) { return a.x < b.x; }
 
+MoveInt operator+(MoveInt a, MoveInt b) { return MoveInt(a.x + b.x); }
+
 
 std::vector<MoveInt> move_int_vec() {
   std::vector<MoveInt> v;
@@ -185,6 +187,12 @@ TEST_CASE("slice") {
   CHECK(ys[0] == 1);
   CHECK(ys[1] == 2);
   CHECK(ys.size() == 2);
+}
+
+TEST_CASE("fold1") {
+  auto y = iter(move_int_vec()) | fold1(std::plus());
+
+  CHECK(y == 1 + 2 + 3 + 4);
 }
 
 TEST_CASE("pairwise borrow") {

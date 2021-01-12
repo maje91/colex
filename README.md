@@ -147,6 +147,21 @@ auto y = iter(xs)
 // y == 6
 ```
 
+### `fold1(F func)`
+Reduces all input elements to a single value where the first element
+is used as the initial value. Requires that the input iterator has at least
+one element, or else the program will crash.
+
+This example sums all elements of `xs`.
+```cpp
+std::vector<int> xs = {1, 2, 3};
+
+auto y = iter(xs) 
+       | fold1([](int acc, int x) { return acc + x; });
+
+// y == 6
+```
+
 ### `filter(F predicate)`
 Removes all input elements that doesn't satisfy the
 predicate `F: (T x) -> bool`.
