@@ -202,6 +202,24 @@ struct Types<ChunkMap<E>, I> {
   using Output = iterator::ChunkMap<E, I>;
 };
 
+class Chunk : public Expression<Chunk> {
+ public:
+  explicit Chunk(size_t size) : size(size) {}
+
+  template<typename I>
+  OutputType<Chunk, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Chunk<I>(size, std::move(iter));
+  }
+
+ private:
+  size_t size;
+};
+
+template<typename I>
+struct Types<Chunk, I> {
+  using Output = iterator::Chunk<I>;
+};
+
 template<typename F>
 class ForEach : public Expression<ForEach<F>> {
  public:

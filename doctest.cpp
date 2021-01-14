@@ -429,3 +429,14 @@ TEST_CASE("chunk map") {
   CHECK(ys[2] == 5);
   CHECK(ys.size() == 3);
 }
+
+TEST_CASE("chunk") {
+  auto ys = iter({1, 2, 3, 4, 5}) | chunk(2)
+          | map([](auto x) { return std::move(x) | fold1(std::plus()); })
+          | collect<std::vector>();
+
+  CHECK(ys[0] == 3);
+  CHECK(ys[1] == 7);
+  CHECK(ys[2] == 5);
+  CHECK(ys.size() == 3);
+}

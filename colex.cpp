@@ -21,5 +21,8 @@ expression::Composition<expression::Drop, expression::Take> slice(size_t start, 
 expression::Pairwise pairwise() {
   return expression::Pairwise();
 }
+expression::Chunk chunk(size_t size) {
+  return expression::Chunk(size);
+}
 
 }

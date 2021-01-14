@@ -265,8 +265,22 @@ iterator
 This example sums adjacent numbers
 ```cpp
 auto ys = iter({1, 2, 3, 4, 5})
-        | chunk_map(2, fold(0, std::plus()))
+        | chunk_map(2, fold1(std::plus()))
         | collect<std::vector>();
+
+// ys == std::vector<int> { 3, 7, 5 }
+```
+
+### `chunk(size_t size)`
+Splits the input iterator into an iterator of
+inner iterators with `size` elements each.
+
+This example sums adjacent numbers
+```cpp
+auto ys = iter({1, 2, 3, 4, 5})
+| chunk_map(2)
+| map([](auto x) { return std::move(x) | fold1(std::plus()))
+| collect<std::vector>();
 
 // ys == std::vector<int> { 3, 7, 5 }
 ```

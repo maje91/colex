@@ -94,6 +94,11 @@ expression::ChunkMap<E> chunk_map(size_t size, E expr) {
 }
 
 /**
+ * Creates a chunk map expression. See README for details.
+ */
+expression::Chunk chunk(size_t size);
+
+/**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.
  */
 template<typename E1, typename E2>
