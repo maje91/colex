@@ -440,3 +440,21 @@ TEST_CASE("chunk") {
   CHECK(ys[2] == 5);
   CHECK(ys.size() == 3);
 }
+
+TEST_CASE("function") {
+  auto f = []() -> std::optional<MoveInt> {
+    static size_t i = 0;
+    size_t n = 3;
+
+    if (i++ < n) { return MoveInt(i); }
+
+    return {};
+  };
+
+  auto ys = func(f) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys.size() == 3);
+}

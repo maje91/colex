@@ -235,6 +235,16 @@ iterator::Range<T> range(T begin, T end, T step) {
 }
 
 /**
+ * Creates an iterator that calls func over and over.
+ * F: () -> std::optional<T>. The iterator is exhausted
+ * when func() returns none.
+ */
+template<typename F>
+iterator::Function<F> func(F func) {
+  return iterator::Function<F>(std::move(func));
+}
+
+/**
  * Base type for things iterators can be collected into
  */
 template<template<typename...> typename C>

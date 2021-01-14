@@ -471,6 +471,32 @@ struct Types<Range<T>> {
   using Output = T;
 };
 
+template<typename F>
+class Function : public Iterator<Function<F>> {
+ public:
+  explicit Function(F func) : m_func(std::move(func)), m_next(m_func()) {}
+
+  [[nodiscard]] bool is_exhausted() const {
+    return !m_next.has_value();
+  }
+
+  [[nodiscard]] std::optional<OutputType<Function<F>>> next() {
+    std::optional<OutputType<Function<F>>> out = std::move(m_next);
+    m_next = m_func();
+
+    return std::move(out);
+  }
+
+ private:
+  F m_func;
+  std::optional<OutputType<Function<F>>> m_next;
+};
+
+template<typename F>
+struct Types<Function<F>> {
+  using Output = typename std::result_of_t<F()>::value_type;
+};
+
 template<typename E, typename I>
 class ChunkMap : public Iterator<ChunkMap<E, I>> {
  public:
