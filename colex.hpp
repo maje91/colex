@@ -225,8 +225,8 @@ iterator::Concat<I1, I2> concat(iterator::Iterator<I1> &&left, iterator::Iterato
  * Creates an iterator over the range `[begin, end)`.
  */
 template<typename T>
-iterator::Range<T> range(T begin, T end) {
-  return iterator::Range(begin, end);
+iterator::Range<T> range(T begin, T end, T step) {
+  return iterator::Range(begin, end, step);
 }
 
 /**

@@ -445,12 +445,17 @@ struct Types<Pairwise<I>> {
 template<typename T>
 class Range : public Iterator<Range<T>> {
  public:
-  explicit Range(T begin, T end) : i(begin), end(end) {}
+  explicit Range(T begin, T end, T step) : i(begin), end(end), step(step) {}
 
-  [[nodiscard]] bool is_exhausted() const { return i == end; }
+  [[nodiscard]] bool is_exhausted() const { return i >= end; }
 
   [[nodiscard]] std::optional<OutputType<Range>> next() {
-    if (!is_exhausted()) { return i++; }
+    if (!is_exhausted()) {
+      T value = i;
+      i += step;
+
+      return value;
+    }
 
     return {};
   }
@@ -458,6 +463,7 @@ class Range : public Iterator<Range<T>> {
  private:
   T i;
   T end;
+  T step;
 };
 
 template<typename T>

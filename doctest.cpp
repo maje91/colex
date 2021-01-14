@@ -411,12 +411,13 @@ TEST_CASE("unordered_map move") {
 }
 
 TEST_CASE("range") {
-  auto ys = range(1, 4) | collect<std::vector>();
+  auto ys = range(1, 8, 2) | collect<std::vector>();
 
   CHECK(ys[0] == 1);
-  CHECK(ys[1] == 2);
-  CHECK(ys[2] == 3);
-  CHECK(ys.size() == 3);
+  CHECK(ys[1] == 3);
+  CHECK(ys[2] == 5);
+  CHECK(ys[3] == 7);
+  CHECK(ys.size() == 4);
 }
 
 TEST_CASE("chunk map") {

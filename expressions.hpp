@@ -94,7 +94,7 @@ class Fold1 : public Expression<Fold1<F>> {
 
 template<typename F, typename I>
 struct Types<Fold1<F>, I> {
-  using Output = iterator::OutputType<I>;
+  using Output = std::result_of_t<F(iterator::OutputType<I>, iterator::OutputType<I>)>;
 };
 
 template<typename F>
