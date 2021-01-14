@@ -420,6 +420,16 @@ TEST_CASE("range") {
   CHECK(ys.size() == 4);
 }
 
+TEST_CASE("open_range") {
+  auto ys = zip(open_range(0, 2), range(0, 3, 1))
+          | map([](auto x) { return x.first; }) | collect<std::vector>();
+
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 4);
+  CHECK(ys.size() == 3);
+}
+
 TEST_CASE("chunk map") {
   auto ys = iter({1, 2, 3, 4, 5}) | chunk_map(2, fold(0, std::plus()))
           | collect<std::vector>();

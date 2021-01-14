@@ -227,11 +227,19 @@ iterator::Concat<I1, I2> concat(iterator::Iterator<I1> &&left, iterator::Iterato
 }
 
 /**
- * Creates an iterator over the range `[begin, end)`.
+ * Creates an iterator over the range `[begin, end)` with step size `step`.
  */
 template<typename T>
 iterator::Range<T> range(T begin, T end, T step) {
   return iterator::Range(begin, end, step);
+}
+
+/**
+ * Creates an iterator over the range `[begin, inf)` with step size `step`.
+ */
+template<typename T>
+iterator::OpenRange<T> open_range(T begin, T step) {
+  return iterator::OpenRange<T>(std::move(begin), std::move(step));
 }
 
 /**

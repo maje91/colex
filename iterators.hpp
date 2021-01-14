@@ -471,6 +471,31 @@ struct Types<Range<T>> {
   using Output = T;
 };
 
+
+template<typename T>
+class OpenRange : public Iterator<OpenRange<T>> {
+ public:
+  explicit OpenRange(T begin, T step) : i(begin), step(step) {}
+
+  [[nodiscard]] bool is_exhausted() const { return false; }
+
+  [[nodiscard]] std::optional<OutputType<OpenRange>> next() {
+    T value = i;
+    i += step;
+
+    return value;
+  }
+
+ private:
+  T i;
+  T step;
+};
+
+template<typename T>
+struct Types<OpenRange<T>> {
+  using Output = T;
+};
+
 template<typename F>
 class Function : public Iterator<Function<F>> {
  public:
