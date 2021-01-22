@@ -195,34 +195,6 @@ TEST_CASE("fold1") {
   CHECK(y == 1 + 2 + 3 + 4);
 }
 
-TEST_CASE("pairwise borrow") {
-  auto xs = move_int_vec();
-
-  auto ys = iter(xs) | pairwise() | collect<std::vector>();
-
-  CHECK(ys[0].first == 0);
-  CHECK(ys[0].second == 1);
-  CHECK(ys[1].first == 1);
-  CHECK(ys[1].second == 2);
-  CHECK(ys[2].first == 2);
-  CHECK(ys[2].second == 3);
-  CHECK(ys[3].first == 3);
-  CHECK(ys[3].second == 4);
-}
-
-TEST_CASE("pairwise move") {
-  auto ys = iter({0, 1, 2, 3, 4}) | pairwise() | collect<std::vector>();
-
-  CHECK(ys[0].first == 0);
-  CHECK(ys[0].second == 1);
-  CHECK(ys[1].first == 1);
-  CHECK(ys[1].second == 2);
-  CHECK(ys[2].first == 2);
-  CHECK(ys[2].second == 3);
-  CHECK(ys[3].first == 3);
-  CHECK(ys[3].second == 4);
-}
-
 TEST_CASE("initializer list") {
   auto ys = iter({1, 2, 3}) | collect<std::vector>();
 
@@ -261,6 +233,14 @@ TEST_CASE("concat") {
   CHECK(ys[4] == 5);
   CHECK(ys[5] == 6);
   CHECK(ys.size() == 6);
+}
+
+TEST_CASE("window") {
+  auto ys = iter({1, 2, 3, 4}) | window<3>() | map([](std::array<int, 3> xs) { return xs[0] + xs[1] + xs[2]; }) | collect<std::vector>();
+
+  CHECK(ys[0] == 6);
+  CHECK(ys[1] == 9);
+  CHECK(ys.size() == 2);
 }
 
 TEST_CASE("conversion") {

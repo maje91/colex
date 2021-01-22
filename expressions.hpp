@@ -116,6 +116,22 @@ struct Types<FlatMap<F>, I> {
   using Output = iterator::FlatMap<F, I>;
 };
 
+template<size_t N>
+class Window : public Expression<Window<N>> {
+ public:
+  Window() = default;
+
+  template<typename I>
+  OutputType<Window<N>, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Window<N, I>(std::move(iter));
+  }
+};
+
+template<size_t N, typename I>
+struct Types<Window<N>, I> {
+  using Output = iterator::Window<N, I>;
+};
+
 class Take : public Expression<Take> {
  public:
   explicit Take(size_t count) : count(count) {}
@@ -165,21 +181,6 @@ class Enumerate : public Expression<Enumerate> {
 template<typename I>
 struct Types<Enumerate, I> {
   using Output = iterator::Enumerate<I>;
-};
-
-class Pairwise : public Expression<Pairwise> {
- public:
-  explicit Pairwise() {}
-
-  template<typename I>
-  OutputType<Pairwise, I> apply(iterator::Iterator<I> &&iter) const {
-    return iterator::Pairwise<I>(std::move(iter));
-  }
-};
-
-template<typename I>
-struct Types<Pairwise, I> {
-  using Output = iterator::Pairwise<I>;
 };
 
 template<typename E>

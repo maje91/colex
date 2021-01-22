@@ -409,37 +409,47 @@ struct Types<Enumerate<I>> {
   using Output = std::pair<size_t, OutputType<I>>;
 };
 
-template<typename I>
-class Pairwise : public Iterator<Pairwise<I>> {
+template<size_t N, typename I>
+class Window : public Iterator<Window<N, I>> {
  public:
-  explicit Pairwise(Iterator<I> &&iter) : underlying(static_cast<I &&>(iter)) {
-    a = underlying.next();
-    b = underlying.next();
+  explicit Window(Iterator<I>&& iter) : m_underlying(static_cast<I&&>(iter)), m_start_index(0) {
+    for (size_t i = 0; i < N; ++i) {
+      m_elements[i] = m_underlying.next();
+    }
   }
 
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
+  [[nodiscard]] bool is_exhausted() const { return m_underlying.is_exhausted(); }
 
-  [[nodiscard]] std::optional<OutputType<Pairwise<I>>> next() {
-    if (a.has_value() && b.has_value()) {
-      auto content = std::make_pair(a.value(), b.value());
-      a = b;
-      b = underlying.next();
+  [[nodiscard]] std::optional<OutputType<Window<N, I>>> next() {
+    std::array<OutputType<I>, N> content;
 
-      return content;
+    for (size_t i = 0; i < N; ++i) {
+      size_t j = (m_start_index + i) % N;
+
+      if (m_elements[j].has_value()) {
+        content[i] = m_elements[j].value();
+
+      } else {
+        return {};
+
+      }
     }
 
-    return {};
+    m_elements[m_start_index] = m_underlying.next();
+    m_start_index = (m_start_index + 1) % N;
+
+    return std::move(content);
   }
 
  private:
-  I underlying;
-  std::optional<OutputType<I>> a;
-  std::optional<OutputType<I>> b;
+  I m_underlying;
+  size_t m_start_index;
+  std::array<std::optional<OutputType<I>>, N> m_elements;
 };
 
-template<typename I>
-struct Types<Pairwise<I>> {
-  using Output = std::pair<OutputType<I>, OutputType<I>>;
+template<size_t N, typename I>
+struct Types<Window<N, I>> {
+  using Output = std::array<OutputType<I>, N>;
 };
 
 template<typename T>

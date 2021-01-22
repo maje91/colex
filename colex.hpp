@@ -53,6 +53,14 @@ expression::FlatMap<F> flat_map(F func) {
 }
 
 /**
+ * Creates a window expression. See README for details
+ */
+template<size_t N>
+expression::Window<N> window() {
+  return expression::Window<N>();
+}
+
+/**
  * Creates a take expression. See README for details
  */
 expression::Take take(size_t count);
@@ -79,11 +87,6 @@ expression::ForEach<F> for_each(F func) {
  * Creates a slice expression. See README for details.
  */
 expression::Composition<expression::Drop, expression::Take> slice(size_t start, size_t count);
-
-/**
- * Creates a pairwise expression. See README for details
- */
-expression::Pairwise pairwise();
 
 /**
  * Creates a chunk map expression. See README for details.
