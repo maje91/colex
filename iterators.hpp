@@ -420,20 +420,56 @@ class Window : public Iterator<Window<N, I>> {
 
   [[nodiscard]] bool is_exhausted() const { return m_underlying.is_exhausted(); }
 
-  [[nodiscard]] std::optional<OutputType<Window<N, I>>> next() {
-    std::array<OutputType<I>, N> content;
-
-    for (size_t i = 0; i < N; ++i) {
-      size_t j = (m_start_index + i) % N;
-
-      if (m_elements[j].has_value()) {
-        content[i] = m_elements[j].value();
-
-      } else {
-        return {};
-
-      }
+  bool last_is_none() {
+    if (m_start_index == 0) {
+      return !m_elements[N-1].has_value();
     }
+
+    return !m_elements[m_start_index-1].has_value();
+  }
+
+  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 2>>, int> = 0>
+  T make_content() {
+    return {
+            m_elements[m_start_index].value(),
+            m_elements[(m_start_index + 1) % N].value(),
+    };
+  }
+
+  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 3>>, int> = 0>
+  T make_content() {
+    return {
+            m_elements[m_start_index].value(),
+            m_elements[(m_start_index + 1) % N].value(),
+            m_elements[(m_start_index + 2) % N].value(),
+    };
+  }
+
+  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 4>>, int> = 0>
+  T make_content() {
+    return {
+            m_elements[m_start_index].value(),
+            m_elements[(m_start_index + 1) % N].value(),
+            m_elements[(m_start_index + 2) % N].value(),
+            m_elements[(m_start_index + 3) % N].value(),
+    };
+  }
+
+  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 5>>, int> = 0>
+  T make_content() {
+    return {
+            m_elements[m_start_index].value(),
+            m_elements[(m_start_index + 1) % N].value(),
+            m_elements[(m_start_index + 2) % N].value(),
+            m_elements[(m_start_index + 3) % N].value(),
+            m_elements[(m_start_index + 4) % N].value(),
+    };
+  }
+
+  [[nodiscard]] std::optional<OutputType<Window<N, I>>> next() {
+    if (last_is_none()) { return {}; }
+
+    std::array<OutputType<I>, N> content = make_content<std::array<OutputType<I>, N>>();
 
     m_elements[m_start_index] = m_underlying.next();
     m_start_index = (m_start_index + 1) % N;
