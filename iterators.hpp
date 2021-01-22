@@ -195,6 +195,54 @@ struct Types<ArrayMove<T, N>> {
   using Output = T;
 };
 
+template<typename T>
+class Pointer : public Iterator<Pointer<T>> {
+ public:
+  explicit Pointer(const T *underlying, size_t element_count)
+      : m_ptr(underlying), m_end(m_ptr + element_count) {}
+
+  [[nodiscard]] bool is_exhausted() const { return m_ptr == m_end; }
+
+  [[nodiscard]] std::optional<OutputType<Pointer<T>>> next() {
+    if (is_exhausted()) { return {}; }
+
+    return *(m_ptr++);
+  }
+
+ private:
+  const T* m_ptr;
+  const T* m_end;
+};
+
+template<typename T>
+struct Types<Pointer<T>> {
+  using Output = std::reference_wrapper<const T>;
+};
+
+template<typename T>
+class PointerMove : public Iterator<PointerMove<T>> {
+ public:
+  explicit PointerMove(T *underlying, size_t element_count)
+          : m_ptr(underlying), m_end(m_ptr + element_count) {}
+
+  [[nodiscard]] bool is_exhausted() const { return m_ptr == m_end; }
+
+  [[nodiscard]] std::optional<OutputType<PointerMove<T>>> next() {
+    if (is_exhausted()) { return {}; }
+
+    return std::move(*(m_ptr++));
+  }
+
+ private:
+  T* m_ptr;
+  T* m_end;
+};
+
+template<typename T>
+struct Types<PointerMove<T>> {
+  using Output = T;
+};
+
 template<typename F, typename I>
 class Map : public Iterator<Map<F, I>> {
  public:
@@ -208,7 +256,7 @@ class Map : public Iterator<Map<F, I>> {
   [[nodiscard]] std::optional<OutputType<Map<F, I>>> next() {
     auto content = underlying.next();
 
-    if (content.has_value()) { return func(content.value()); }
+    if (content.has_value()) { return func(std::move(content.value())); }
 
     return {};
   }
@@ -412,23 +460,24 @@ struct Types<Enumerate<I>> {
 template<size_t N, typename I>
 class Window : public Iterator<Window<N, I>> {
  public:
-  explicit Window(Iterator<I>&& iter) : m_underlying(static_cast<I&&>(iter)), m_start_index(0) {
-    for (size_t i = 0; i < N; ++i) {
-      m_elements[i] = m_underlying.next();
-    }
+  explicit Window(Iterator<I> &&iter)
+      : m_underlying(static_cast<I &&>(iter)), m_start_index(0) {
+    for (size_t i = 0; i < N; ++i) { m_elements[i] = m_underlying.next(); }
   }
 
-  [[nodiscard]] bool is_exhausted() const { return m_underlying.is_exhausted(); }
+  [[nodiscard]] bool is_exhausted() const {
+    return m_underlying.is_exhausted();
+  }
 
   bool last_is_none() {
-    if (m_start_index == 0) {
-      return !m_elements[N-1].has_value();
-    }
+    if (m_start_index == 0) { return !m_elements[N - 1].has_value(); }
 
-    return !m_elements[m_start_index-1].has_value();
+    return !m_elements[m_start_index - 1].has_value();
   }
 
-  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 2>>, int> = 0>
+  template<typename T,
+           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 2>>,
+                            int> = 0>
   T make_content() {
     return {
             m_elements[m_start_index].value(),
@@ -436,7 +485,9 @@ class Window : public Iterator<Window<N, I>> {
     };
   }
 
-  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 3>>, int> = 0>
+  template<typename T,
+           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 3>>,
+                            int> = 0>
   T make_content() {
     return {
             m_elements[m_start_index].value(),
@@ -445,7 +496,9 @@ class Window : public Iterator<Window<N, I>> {
     };
   }
 
-  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 4>>, int> = 0>
+  template<typename T,
+           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 4>>,
+                            int> = 0>
   T make_content() {
     return {
             m_elements[m_start_index].value(),
@@ -455,7 +508,9 @@ class Window : public Iterator<Window<N, I>> {
     };
   }
 
-  template<typename T, std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 5>>, int> = 0>
+  template<typename T,
+           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 5>>,
+                            int> = 0>
   T make_content() {
     return {
             m_elements[m_start_index].value(),
@@ -469,7 +524,8 @@ class Window : public Iterator<Window<N, I>> {
   [[nodiscard]] std::optional<OutputType<Window<N, I>>> next() {
     if (last_is_none()) { return {}; }
 
-    std::array<OutputType<I>, N> content = make_content<std::array<OutputType<I>, N>>();
+    std::array<OutputType<I>, N> content =
+            make_content<std::array<OutputType<I>, N>>();
 
     m_elements[m_start_index] = m_underlying.next();
     m_start_index = (m_start_index + 1) % N;
@@ -547,9 +603,7 @@ class Function : public Iterator<Function<F>> {
  public:
   explicit Function(F func) : m_func(std::move(func)), m_next(m_func()) {}
 
-  [[nodiscard]] bool is_exhausted() const {
-    return !m_next.has_value();
-  }
+  [[nodiscard]] bool is_exhausted() const { return !m_next.has_value(); }
 
   [[nodiscard]] std::optional<OutputType<Function<F>>> next() {
     std::optional<OutputType<Function<F>>> out = std::move(m_next);

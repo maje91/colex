@@ -203,6 +203,30 @@ TEST_CASE("initializer list") {
   CHECK(ys[2] == 3);
 }
 
+TEST_CASE("pointer borrow") {
+  auto xs = move_int_vec();
+
+  auto ys = iter(xs.data(), 3) | map([](const MoveInt &x) { return 2 * x.x; })
+          | collect<std::vector>();
+
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 4);
+  CHECK(ys.size() == 3);
+}
+
+TEST_CASE("pointer move") {
+  auto xs = move_int_vec();
+
+  auto ys = iter(xs.data(), 3) | map([](MoveInt x) { return 2 * x.x; })
+            | collect<std::vector>();
+
+          CHECK(ys[0] == 0);
+          CHECK(ys[1] == 2);
+          CHECK(ys[2] == 4);
+          CHECK(ys.size() == 3);
+}
+
 TEST_CASE("zip") {
   std::array<MoveInt, 3> left{1, 2, 3};
   std::array<MoveInt, 3> right{4, 5, 6};
@@ -236,7 +260,9 @@ TEST_CASE("concat") {
 }
 
 TEST_CASE("window") {
-  auto ys = iter({1, 2, 3, 4}) | window<3>() | map([](std::array<int, 3> xs) { return xs[0] + xs[1] + xs[2]; }) | collect<std::vector>();
+  auto ys = iter({1, 2, 3, 4}) | window<3>()
+          | map([](std::array<int, 3> xs) { return xs[0] + xs[1] + xs[2]; })
+          | collect<std::vector>();
 
   CHECK(ys[0] == 6);
   CHECK(ys[1] == 9);

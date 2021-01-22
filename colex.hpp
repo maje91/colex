@@ -213,6 +213,16 @@ iterator::STLMove<std::vector, T> iter(std::initializer_list<T>&& xs) {
   return iterator::STLMove<std::vector, T>(std::move(xs));
 }
 
+template<typename T>
+iterator::Pointer<T> iter(const T* underlying, size_t element_count) {
+  return iterator::Pointer<T>(underlying, element_count);
+}
+
+template<typename T>
+iterator::PointerMove<T> iter(T*&& underlying, size_t element_count) {
+  return iterator::PointerMove<T>(std::move(underlying), element_count);
+}
+
 /**
  * Creates a zip iterator from two iterators. See README for details
  */

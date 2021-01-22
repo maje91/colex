@@ -308,3 +308,6 @@ Can only be used as input.
 
 ### `std::initializer_list`
 Can only be used as input. Converted to an `std::vector` internally
+
+### `T*`
+Can only be used as input. Must supply the number of elements.
