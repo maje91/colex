@@ -315,7 +315,7 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
   FlatMap(const FlatMap &) = delete;
   FlatMap(FlatMap &&) noexcept = default;
 
-  [[nodiscard]] bool is_exhausted() const { return outer.is_exhausted(); }
+  [[nodiscard]] bool is_exhausted() const { return !inner.value().is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<FlatMap<F, I>>> next() {
     if (inner.has_value()) {
@@ -466,10 +466,10 @@ class Window : public Iterator<Window<N, I>> {
   }
 
   [[nodiscard]] bool is_exhausted() const {
-    return m_underlying.is_exhausted();
+    return last_is_none();
   }
 
-  bool last_is_none() {
+  bool last_is_none() const {
     if (m_start_index == 0) { return !m_elements[N - 1].has_value(); }
 
     return !m_elements[m_start_index - 1].has_value();
@@ -709,7 +709,11 @@ class Concat : public Iterator<Concat<I1, I2>> {
   [[nodiscard]] bool is_exhausted() const { return right.is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<Concat<I1, I2>>> next() {
-    if (!left.is_exhausted()) { return left.next(); }
+    auto left_content = left.next();
+
+    if (left_content.has_value()) {
+      return std::move(left_content.value());
+    }
 
     return right.next();
   }
