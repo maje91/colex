@@ -235,6 +235,14 @@ iterator::Range<T> range(T begin, T end, T step) {
 }
 
 /**
+ * Creates an iterator of the range `[begin, end)` with step size 1
+ */
+template<typename T>
+iterator::Range<T> range(T begin, T end) {
+  return iterator::Range(begin, end, T(1));
+}
+
+/**
  * Creates an iterator over the range `[begin, inf)` with step size `step`.
  */
 template<typename T>
