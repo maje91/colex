@@ -19,10 +19,8 @@ class STL : public Iterator<STL<C, T>> {
   explicit STL(const C<T> &underlying)
       : it(underlying.begin()), end(underlying.end()) {}
 
-  [[nodiscard]] bool is_exhausted() const { return it == end; }
-
   [[nodiscard]] std::optional<OutputType<STL<C, T>>> next() {
-    if (!is_exhausted()) { return std::reference_wrapper(*(it++)); }
+    if (it != end) { return *(it++); }
 
     return {};
   }
@@ -34,7 +32,7 @@ class STL : public Iterator<STL<C, T>> {
 
 template<template<typename...> typename C, typename T>
 struct Types<STL<C, T>> {
-  using Output = std::reference_wrapper<const T>;
+  using Output = T;
 };
 
 /**
@@ -46,10 +44,8 @@ struct STLMove : public Iterator<STLMove<C, T>> {
   explicit STLMove(C<T> &&_underlying)
       : underlying(std::move(_underlying)), it(underlying.begin()) {}
 
-  [[nodiscard]] bool is_exhausted() const { return it == underlying.end(); }
-
   [[nodiscard]] std::optional<OutputType<STLMove<C, T>>> next() {
-    if (!is_exhausted()) { return std::move(*(it++)); }
+    if (it != underlying.end()) { return std::move(*(it++)); }
 
     return {};
   }
@@ -68,10 +64,8 @@ struct STLMove<std::set, T> : public Iterator<STLMove<std::set, T>> {
   explicit STLMove(std::set<T> &&underlying)
       : underlying(std::move(underlying)) {}
 
-  [[nodiscard]] bool is_exhausted() const { return underlying.empty(); }
-
   [[nodiscard]] std::optional<OutputType<STLMove<std::set, T>>> next() {
-    if (!is_exhausted()) {
+    if (!underlying.empty()) {
       return std::move(underlying.extract(underlying.begin()).value());
     }
 
@@ -96,10 +90,8 @@ class STLPair : public Iterator<STLPair<C, K, V>> {
   explicit STLPair(const C<K, V> &underlying)
       : it(underlying.begin()), end(underlying.end()) {}
 
-  [[nodiscard]] bool is_exhausted() const { return it == end; }
-
   [[nodiscard]] std::optional<OutputType<STLPair<C, K, V>>> next() {
-    if (!is_exhausted()) { return *(it++); }
+    if (it != end) { return *(it++); }
 
     return {};
   }
@@ -123,10 +115,8 @@ class STLPairMove : public Iterator<STLPairMove<C, K, V>> {
   explicit STLPairMove(C<K, V> &&_underlying)
       : underlying(std::move(_underlying)), it(underlying.begin()) {}
 
-  [[nodiscard]] bool is_exhausted() const { return it == underlying.end(); }
-
   [[nodiscard]] std::optional<OutputType<STLPairMove<C, K, V>>> next() {
-    if (!is_exhausted()) { return std::move(*(it++)); }
+    if (it != underlying.end()) { return std::move(*(it++)); }
 
     return {};
   }
@@ -150,10 +140,8 @@ class Array : public Iterator<Array<T, N>> {
   explicit Array(const std::array<T, N> &underlying)
       : i(0), underlying(underlying) {}
 
-  [[nodiscard]] bool is_exhausted() const { return i == N; }
-
   [[nodiscard]] std::optional<OutputType<Array<T, N>>> next() {
-    if (!is_exhausted()) { return underlying[i++]; }
+    if (i < N) { return underlying[i++]; }
 
     return {};
   }
@@ -165,7 +153,7 @@ class Array : public Iterator<Array<T, N>> {
 
 template<typename T, size_t N>
 struct Types<Array<T, N>> {
-  using Output = std::reference_wrapper<const T>;
+  using Output = T;
 };
 
 /**
@@ -177,10 +165,8 @@ class ArrayMove : public Iterator<ArrayMove<T, N>> {
   explicit ArrayMove(std::array<T, N> &&underlying)
       : i(0), underlying(std::move(underlying)) {}
 
-  [[nodiscard]] bool is_exhausted() const { return i == N; }
-
   [[nodiscard]] std::optional<OutputType<ArrayMove<T, N>>> next() {
-    if (!is_exhausted()) { return std::move(underlying[i++]); }
+    if (i < N) { return std::move(underlying[i++]); }
 
     return {};
   }
@@ -201,41 +187,37 @@ class Pointer : public Iterator<Pointer<T>> {
   explicit Pointer(const T *underlying, size_t element_count)
       : m_ptr(underlying), m_end(m_ptr + element_count) {}
 
-  [[nodiscard]] bool is_exhausted() const { return m_ptr == m_end; }
-
   [[nodiscard]] std::optional<OutputType<Pointer<T>>> next() {
-    if (is_exhausted()) { return {}; }
+    if (m_ptr != m_end) { return *(m_ptr++); }
 
-    return *(m_ptr++);
+    return {};
   }
 
  private:
-  const T* m_ptr;
-  const T* m_end;
+  const T *m_ptr;
+  const T *m_end;
 };
 
 template<typename T>
 struct Types<Pointer<T>> {
-  using Output = std::reference_wrapper<const T>;
+  using Output = T;
 };
 
 template<typename T>
 class PointerMove : public Iterator<PointerMove<T>> {
  public:
   explicit PointerMove(T *underlying, size_t element_count)
-          : m_ptr(underlying), m_end(m_ptr + element_count) {}
-
-  [[nodiscard]] bool is_exhausted() const { return m_ptr == m_end; }
+      : m_ptr(underlying), m_end(m_ptr + element_count) {}
 
   [[nodiscard]] std::optional<OutputType<PointerMove<T>>> next() {
-    if (is_exhausted()) { return {}; }
+    if (m_ptr != m_end) { return std::move(*(m_ptr++)); }
 
-    return std::move(*(m_ptr++));
+    return {};
   }
 
  private:
-  T* m_ptr;
-  T* m_end;
+  T *m_ptr;
+  T *m_end;
 };
 
 template<typename T>
@@ -250,8 +232,6 @@ class Map : public Iterator<Map<F, I>> {
       : underlying(static_cast<I &&>(underlying)), func(func) {}
   Map(const Map &) = delete;
   Map(Map &&) noexcept = default;
-
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<Map<F, I>>> next() {
     auto content = underlying.next();
@@ -278,8 +258,6 @@ class Filter : public Iterator<Filter<F, I>> {
       : underlying(static_cast<I &&>(underlying)), predicate(predicate) {}
   Filter(const Filter &) = delete;
   Filter(Filter &&) noexcept = default;
-
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<Filter<F, I>>> next() {
     for (auto content = underlying.next(); content.has_value();
@@ -308,14 +286,13 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
     auto outer_content = outer.next();
 
     if (outer_content.has_value()) {
-      inner = func(std::move(outer_content.value()));
+      inner = std::move(func(std::move(outer_content.value())));
     }
   }
 
   FlatMap(const FlatMap &) = delete;
   FlatMap(FlatMap &&) noexcept = default;
-
-  [[nodiscard]] bool is_exhausted() const { return !inner.value().is_exhausted(); }
+  FlatMap& operator=(FlatMap &&) noexcept = default;
 
   [[nodiscard]] std::optional<OutputType<FlatMap<F, I>>> next() {
     if (inner.has_value()) {
@@ -334,15 +311,6 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
     return {};
   }
 
-  void advance() {
-    inner.advance();
-
-    if (inner.at_end()) {
-      outer.advance();
-      inner = func(outer.content());
-    }
-  }
-
  private:
   I outer;
   std::optional<std::invoke_result_t<F, OutputType<I>>> inner;
@@ -359,8 +327,6 @@ class Take : public Iterator<Take<I>> {
  public:
   explicit Take(size_t count, Iterator<I> &&iter)
       : i(0), take_count(count), underlying(static_cast<I &&>(iter)) {}
-
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<Take<I>>> next() {
     if (i++ < take_count) { return underlying.next(); }
@@ -384,8 +350,6 @@ class TakeRef : public Iterator<TakeRef<I>> {
  public:
   explicit TakeRef(size_t count, Iterator<I> &iter)
       : i(0), take_count(count), underlying(static_cast<I &>(iter)) {}
-
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<TakeRef<I>>> next() {
     if (i++ < take_count) { return underlying.next(); }
@@ -414,8 +378,6 @@ class Drop : public Iterator<Drop<I>> {
     }
   }
 
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
-
   [[nodiscard]] std::optional<OutputType<Drop<I>>> next() {
     return underlying.next();
   }
@@ -434,8 +396,6 @@ class Enumerate : public Iterator<Enumerate<I>> {
  public:
   explicit Enumerate(Iterator<I> &&iter)
       : underlying(static_cast<I &&>(iter)), i(0) {}
-
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
 
   [[nodiscard]] std::optional<OutputType<Enumerate<I>>> next() {
     auto content = underlying.next();
@@ -465,11 +425,7 @@ class Window : public Iterator<Window<N, I>> {
     for (size_t i = 0; i < N; ++i) { m_elements[i] = m_underlying.next(); }
   }
 
-  [[nodiscard]] bool is_exhausted() const {
-    return last_is_none();
-  }
-
-  bool last_is_none() const {
+  [[nodiscard]] bool last_is_none() const {
     if (m_start_index == 0) { return !m_elements[N - 1].has_value(); }
 
     return !m_elements[m_start_index - 1].has_value();
@@ -549,10 +505,8 @@ class Range : public Iterator<Range<T>> {
  public:
   explicit Range(T begin, T end, T step) : i(begin), end(end), step(step) {}
 
-  [[nodiscard]] bool is_exhausted() const { return i >= end; }
-
   [[nodiscard]] std::optional<OutputType<Range>> next() {
-    if (!is_exhausted()) {
+    if (i < end) {
       T value = i;
       i += step;
 
@@ -579,8 +533,6 @@ class OpenRange : public Iterator<OpenRange<T>> {
  public:
   explicit OpenRange(T begin, T step) : i(begin), step(step) {}
 
-  [[nodiscard]] bool is_exhausted() const { return false; }
-
   [[nodiscard]] std::optional<OutputType<OpenRange>> next() {
     T value = i;
     i += step;
@@ -601,25 +553,44 @@ struct Types<OpenRange<T>> {
 template<typename F>
 class Function : public Iterator<Function<F>> {
  public:
-  explicit Function(F func) : m_func(std::move(func)), m_next(m_func()) {}
-
-  [[nodiscard]] bool is_exhausted() const { return !m_next.has_value(); }
+  explicit Function(F func) : m_func(std::move(func)) {}
 
   [[nodiscard]] std::optional<OutputType<Function<F>>> next() {
-    std::optional<OutputType<Function<F>>> out = std::move(m_next);
-    m_next = m_func();
-
-    return std::move(out);
+    return std::move(m_func());
   }
 
  private:
   F m_func;
-  std::optional<OutputType<Function<F>>> m_next;
 };
 
 template<typename F>
 struct Types<Function<F>> {
   using Output = typename std::result_of_t<F()>::value_type;
+};
+
+template<typename I1, typename I2,
+        std::enable_if_t<std::is_same_v<OutputType<I1>, OutputType<I2>>, int> = 0>
+class Concat : public Iterator<Concat<I1, I2>> {
+ public:
+  explicit Concat(Iterator<I1> &&left, Iterator<I2> &&right)
+      : left(static_cast<I1 &&>(left)), right(static_cast<I2 &&>(right)) {}
+
+  [[nodiscard]] std::optional<OutputType<Concat<I1, I2>>> next() {
+    auto left_content = left.next();
+
+    if (left_content.has_value()) { return std::move(left_content.value()); }
+
+    return right.next();
+  }
+
+ private:
+  I1 left;
+  I2 right;
+};
+
+template<typename I1, typename I2>
+struct Types<Concat<I1, I2>> {
+  using Output = OutputType<I1>;
 };
 
 template<typename E, typename I>
@@ -628,10 +599,13 @@ class ChunkMap : public Iterator<ChunkMap<E, I>> {
   explicit ChunkMap(size_t size, E expr, Iterator<I> &&iter)
       : underlying(static_cast<I &&>(iter)), size(size), expr(expr) {}
 
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
-
   [[nodiscard]] std::optional<OutputType<ChunkMap<E, I>>> next() {
-    if (!is_exhausted()) { return expr.apply(TakeRef<I>(size, underlying)); }
+    auto it = TakeRef<I>(size, underlying);
+    auto first = it.next();
+    if (first.has_value()) {
+      return expr.apply(
+              Concat(ArrayMove(std::array{std::move(first.value())}), std::move(it)));
+    }
 
     return {};
   }
@@ -644,7 +618,7 @@ class ChunkMap : public Iterator<ChunkMap<E, I>> {
 
 template<typename E, typename I>
 struct Types<ChunkMap<E, I>> {
-  using Output = expression::OutputType<E, I>;
+  using Output = expression::OutputType<E, Concat<ArrayMove<OutputType<I>, 1>, TakeRef<I>>>;
 };
 
 template<typename I>
@@ -653,10 +627,12 @@ class Chunk : public Iterator<Chunk<I>> {
   explicit Chunk(size_t size, Iterator<I> &&iter)
       : underlying(static_cast<I &&>(iter)), size(size) {}
 
-  [[nodiscard]] bool is_exhausted() const { return underlying.is_exhausted(); }
-
   [[nodiscard]] std::optional<OutputType<Chunk<I>>> next() {
-    if (!is_exhausted()) { return TakeRef<I>(size, underlying); }
+    auto it = TakeRef<I>(size, underlying);
+    auto first = it.next();
+    if (first.has_value()) {
+      return Concat(ArrayMove(std::array{std::move(first.value())}), std::move(it));
+    }
 
     return {};
   }
@@ -668,7 +644,7 @@ class Chunk : public Iterator<Chunk<I>> {
 
 template<typename I>
 struct Types<Chunk<I>> {
-  using Output = TakeRef<I>;
+  using Output = Concat<ArrayMove<OutputType<I>, 1>, TakeRef<I>>;
 };
 
 template<typename I1, typename I2>
@@ -677,14 +653,12 @@ class Zip : public Iterator<Zip<I1, I2>> {
   explicit Zip(Iterator<I1> &&left, Iterator<I2> &&right)
       : left(static_cast<I1 &&>(left)), right(static_cast<I2 &&>(right)) {}
 
-  [[nodiscard]] bool is_exhausted() const {
-    return left.is_exhausted() || right.is_exhausted();
-  }
-
   [[nodiscard]] std::optional<OutputType<Zip<I1, I2>>> next() {
-    if (!is_exhausted()) {
-      return std::make_pair(std::move(left.next().value()),
-                            std::move(right.next().value()));
+    auto l = left.next();
+    auto r = right.next();
+
+    if (l.has_value() && r.has_value()) {
+      return std::make_pair(std::move(l.value()), std::move(r.value()));
     }
 
     return {};
@@ -698,34 +672,6 @@ class Zip : public Iterator<Zip<I1, I2>> {
 template<typename I1, typename I2>
 struct Types<Zip<I1, I2>> {
   using Output = std::pair<OutputType<I1>, OutputType<I2>>;
-};
-
-template<typename I1, typename I2>
-class Concat : public Iterator<Concat<I1, I2>> {
- public:
-  explicit Concat(Iterator<I1> &&left, Iterator<I2> &&right)
-      : left(static_cast<I1 &&>(left)), right(static_cast<I2 &&>(right)) {}
-
-  [[nodiscard]] bool is_exhausted() const { return right.is_exhausted(); }
-
-  [[nodiscard]] std::optional<OutputType<Concat<I1, I2>>> next() {
-    auto left_content = left.next();
-
-    if (left_content.has_value()) {
-      return std::move(left_content.value());
-    }
-
-    return right.next();
-  }
-
- private:
-  I1 left;
-  I2 right;
-};
-
-template<typename I1, typename I2>
-struct Types<Concat<I1, I2>> {
-  using Output = OutputType<I1>;
 };
 
 }// namespace colex::iterator

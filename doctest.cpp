@@ -39,7 +39,7 @@ MoveInt square(const MoveInt &x) { return x.x * x.x; }
 TEST_CASE("map collect") {
   auto v = move_int_vec();
 
-  auto ys = iter(v) | map([](const MoveInt &x) { return 2 * x.x; })
+  auto ys = iter(std::move(v)) | map([](MoveInt x) { return 2 * x.x; })
           | collect<std::vector>();
 
   CHECK(ys[0] == 0);
@@ -58,7 +58,7 @@ TEST_CASE("composition borrow borrow") {
   auto mapper = map(square);
 
   auto expr = mapper | folder;
-  auto value = iter(v) | expr;
+  auto value = iter(std::move(v)) | expr;
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
@@ -70,7 +70,7 @@ TEST_CASE("composition move borrow") {
   auto folder = fold(10, sum);
 
   auto expr = map(square) | folder;
-  auto value = iter(v) | expr;
+  auto value = iter(std::move(v)) | expr;
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
@@ -82,7 +82,7 @@ TEST_CASE("composition borrow move") {
   auto mapper = map(square);
 
   auto expr = mapper | fold(10, sum);
-  auto value = iter(v) | expr;
+  auto value = iter(std::move(v)) | expr;
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
@@ -92,7 +92,7 @@ TEST_CASE("composition move move") {
   auto sum = [](int acc, MoveInt x) { return acc + x.x; };
 
   auto expr = map(square) | fold(10, sum);
-  auto value = iter(v) | expr;
+  auto value = iter(std::move(v)) | expr;
   CHECK(value == 10 + 1 + 4 + 9 + 16);
 }
 
@@ -153,7 +153,7 @@ TEST_CASE("enumerate") {
 
 TEST_CASE("for each") {
   std::array<MoveInt, 3> xs{2, 4, 6};
-  iter(xs) | enumerate()
+  iter(std::move(xs)) | enumerate()
           | for_each([](std::pair<size_t, const MoveInt &> pair) {
               if (pair.first == 0) { CHECK(pair.second == 2); }
               if (pair.first == 1) { CHECK(pair.second == 4); }
@@ -295,7 +295,7 @@ TEST_CASE("conversion") {
 TEST_CASE("array input map") {
   std::array<MoveInt, 3> xs{1, 2, 3};
 
-  auto ys = iter(xs) | map(square) | collect<std::vector>();
+  auto ys = iter(std::move(xs)) | map(square) | collect<std::vector>();
 
   CHECK(ys[0] == 1);
   CHECK(ys[1] == 4);

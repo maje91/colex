@@ -24,14 +24,6 @@ using OutputType = typename Types<I>::Output;
  */
 template<typename I>
 struct Iterator {
-
-  /**
-   * Returns true if the iterator has no more elements
-   */
-  [[nodiscard]] bool is_exhausted() const {
-    return static_cast<const I &>(*this).is_exhausted();
-  }
-
   /**
    * Returns the next item. None if the iterator is exhausted.
    */
