@@ -102,6 +102,11 @@ expression::ChunkMap<E> chunk_map(size_t size, E expr) {
 expression::Chunk chunk(size_t size);
 
 /**
+ * Creates a partition expression. See README for details.
+ */
+expression::Partition partition(std::vector<size_t> partition_sizes);
+
+/**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.
  */
 template<typename E1, typename E2>

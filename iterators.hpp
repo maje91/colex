@@ -292,7 +292,7 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
 
   FlatMap(const FlatMap &) = delete;
   FlatMap(FlatMap &&) noexcept = default;
-  FlatMap& operator=(FlatMap &&) noexcept = default;
+  FlatMap &operator=(FlatMap &&) noexcept = default;
 
   [[nodiscard]] std::optional<OutputType<FlatMap<F, I>>> next() {
     if (inner.has_value()) {
@@ -569,7 +569,8 @@ struct Types<Function<F>> {
 };
 
 template<typename I1, typename I2,
-        std::enable_if_t<std::is_same_v<OutputType<I1>, OutputType<I2>>, int> = 0>
+         std::enable_if_t<std::is_same_v<OutputType<I1>, OutputType<I2>>, int> =
+                 0>
 class Concat : public Iterator<Concat<I1, I2>> {
  public:
   explicit Concat(Iterator<I1> &&left, Iterator<I2> &&right)
@@ -603,8 +604,8 @@ class ChunkMap : public Iterator<ChunkMap<E, I>> {
     auto it = TakeRef<I>(size, underlying);
     auto first = it.next();
     if (first.has_value()) {
-      return expr.apply(
-              Concat(ArrayMove(std::array{std::move(first.value())}), std::move(it)));
+      return expr.apply(Concat(ArrayMove(std::array{std::move(first.value())}),
+                               std::move(it)));
     }
 
     return {};
@@ -618,7 +619,8 @@ class ChunkMap : public Iterator<ChunkMap<E, I>> {
 
 template<typename E, typename I>
 struct Types<ChunkMap<E, I>> {
-  using Output = expression::OutputType<E, Concat<ArrayMove<OutputType<I>, 1>, TakeRef<I>>>;
+  using Output = expression::OutputType<
+          E, Concat<ArrayMove<OutputType<I>, 1>, TakeRef<I>>>;
 };
 
 template<typename I>
@@ -631,7 +633,8 @@ class Chunk : public Iterator<Chunk<I>> {
     auto it = TakeRef<I>(size, underlying);
     auto first = it.next();
     if (first.has_value()) {
-      return Concat(ArrayMove(std::array{std::move(first.value())}), std::move(it));
+      return Concat(ArrayMove(std::array{std::move(first.value())}),
+                    std::move(it));
     }
 
     return {};
@@ -644,6 +647,39 @@ class Chunk : public Iterator<Chunk<I>> {
 
 template<typename I>
 struct Types<Chunk<I>> {
+  using Output = Concat<ArrayMove<OutputType<I>, 1>, TakeRef<I>>;
+};
+
+template<typename I>
+class Partition : public Iterator<Partition<I>> {
+ public:
+  Partition(std::vector<size_t> partition_sizes, Iterator<I> &&underlying)
+      : m_partition_index(0), m_partition_sizes(std::move(partition_sizes)),
+        m_underlying(static_cast<I &&>(underlying)) {}
+
+  [[nodiscard]] std::optional<OutputType<Partition<I>>> next() {
+    size_t n = m_partition_index == m_partition_sizes.size()
+                     ? std::numeric_limits<size_t>::max()
+                     : m_partition_sizes[m_partition_index++];
+
+    auto it = TakeRef<I>(n, m_underlying);
+    auto first = it.next();
+    if (first.has_value()) {
+      return Concat(ArrayMove(std::array{std::move(first.value())}),
+                    std::move(it));
+    }
+
+    return {};
+  }
+
+ private:
+  size_t m_partition_index;
+  std::vector<size_t> m_partition_sizes;
+  I m_underlying;
+};
+
+template<typename I>
+struct Types<Partition<I>> {
   using Output = Concat<ArrayMove<OutputType<I>, 1>, TakeRef<I>>;
 };
 

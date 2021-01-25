@@ -285,6 +285,27 @@ auto ys = iter({1, 2, 3, 4, 5})
 // ys == std::vector<int> { 3, 7, 5 }
 ```
 
+### `partition(std::vector<size_t> partition_sizes)`
+Splits the input iterator into an iterator of
+inner iterators where `partition_sizes` define
+the number of elements of each inner iterator.
+If there are not enough elements defined by
+`partition_sizes` the remaining elements of
+the underlying iterator is returned as the
+last partition.
+
+This examples sums the numbers of each partition
+```cpp
+std::vector<size_t> partition_sizes {2, 3};
+std::vector<int> xs {1, 2, 3, 4, 5, 6, 7};
+
+auto ys = iter(xs) | partition(partition_sizes)
+| map([](auto x) { return std::move(x) | fold1(std::plus()); })
+| collect<std::vector>();
+
+// ys == std::vector<int> {3, 12, 13}
+```
+
 ## Supported Collections
 ### `std::vector`
 Can be used as both input and output.

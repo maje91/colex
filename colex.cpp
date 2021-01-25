@@ -22,4 +22,8 @@ expression::Chunk chunk(size_t size) {
   return expression::Chunk(size);
 }
 
+expression::Partition partition(std::vector<size_t> partition_sizes) {
+  return expression::Partition(std::move(partition_sizes));
+}
+
 }

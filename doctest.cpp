@@ -457,6 +457,20 @@ TEST_CASE("chunk") {
   CHECK(ys.size() == 3);
 }
 
+TEST_CASE("partition") {
+  std::vector<size_t> partition_sizes {2, 3};
+  std::vector<int> xs {1, 2, 3, 4, 5, 6, 7};
+
+  auto ys = iter(xs) | partition(partition_sizes)
+          | map([](auto x) { return std::move(x) | fold1(std::plus()); })
+          | collect<std::vector>();
+
+  CHECK(ys[0] == 3);
+  CHECK(ys[1] == 12);
+  CHECK(ys[2] == 13);
+  CHECK(ys.size() == 3);
+}
+
 TEST_CASE("function") {
   auto f = []() -> std::optional<MoveInt> {
     static size_t i = 0;
