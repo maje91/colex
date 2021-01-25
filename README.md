@@ -11,12 +11,8 @@ The collection is here referred to as an _input_.
 If the final expression is _not_ a reduction,
 it can be _collected_. By this, we mean that the expression is evaluated
 and put into another collection, which we refer to as an _output_.
-All expressions are lazily applied and compile down to 
-optimal for loops*. This is a work in progress, and I'll
+All expressions are lazily applied. This is a work in progress, and I'll
 add functionality as I need it for other projects.
-
-&#8291;* That's the idea anyway, but take it with a grain of salt. 
-I am no C++ expert, and have not verified this claim.
 
 ## Installation
 Clone the repo and `cd` into it. Then

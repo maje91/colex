@@ -19,6 +19,11 @@ class STL : public Iterator<STL<C, T>> {
   explicit STL(const C<T> &underlying)
       : it(underlying.begin()), end(underlying.end()) {}
 
+  STL(const STL &) = delete;
+  STL(STL &&) noexcept = default;
+  STL &operator=(STL &&) noexcept = default;
+  STL &operator=(const STL &) = delete;
+
   [[nodiscard]] std::optional<OutputType<STL<C, T>>> next() {
     if (it != end) { return *(it++); }
 
@@ -44,6 +49,11 @@ struct STLMove : public Iterator<STLMove<C, T>> {
   explicit STLMove(C<T> &&_underlying)
       : underlying(std::move(_underlying)), it(underlying.begin()) {}
 
+  STLMove(const STLMove &) = delete;
+  STLMove(STLMove &&) noexcept = default;
+  STLMove &operator=(STLMove &&) noexcept = default;
+  STLMove &operator=(const STLMove &) = delete;
+
   [[nodiscard]] std::optional<OutputType<STLMove<C, T>>> next() {
     if (it != underlying.end()) { return std::move(*(it++)); }
 
@@ -63,6 +73,11 @@ struct STLMove<std::set, T> : public Iterator<STLMove<std::set, T>> {
  public:
   explicit STLMove(std::set<T> &&underlying)
       : underlying(std::move(underlying)) {}
+
+  STLMove(const STLMove &) = delete;
+  STLMove(STLMove &&) noexcept = default;
+  STLMove &operator=(STLMove &&) noexcept = default;
+  STLMove &operator=(const STLMove &) = delete;
 
   [[nodiscard]] std::optional<OutputType<STLMove<std::set, T>>> next() {
     if (!underlying.empty()) {
@@ -90,6 +105,11 @@ class STLPair : public Iterator<STLPair<C, K, V>> {
   explicit STLPair(const C<K, V> &underlying)
       : it(underlying.begin()), end(underlying.end()) {}
 
+  STLPair(const STLPair &) = delete;
+  STLPair(STLPair &&) noexcept = default;
+  STLPair &operator=(STLPair &&) noexcept = default;
+  STLPair &operator=(const STLPair &) = delete;
+
   [[nodiscard]] std::optional<OutputType<STLPair<C, K, V>>> next() {
     if (it != end) { return *(it++); }
 
@@ -114,6 +134,11 @@ class STLPairMove : public Iterator<STLPairMove<C, K, V>> {
  public:
   explicit STLPairMove(C<K, V> &&_underlying)
       : underlying(std::move(_underlying)), it(underlying.begin()) {}
+
+  STLPairMove(const STLPairMove &) = delete;
+  STLPairMove(STLPairMove &&) noexcept = default;
+  STLPairMove &operator=(STLPairMove &&) noexcept = default;
+  STLPairMove &operator=(const STLPairMove &) = delete;
 
   [[nodiscard]] std::optional<OutputType<STLPairMove<C, K, V>>> next() {
     if (it != underlying.end()) { return std::move(*(it++)); }
@@ -140,6 +165,11 @@ class Array : public Iterator<Array<T, N>> {
   explicit Array(const std::array<T, N> &underlying)
       : i(0), underlying(underlying) {}
 
+  Array(const Array &) = delete;
+  Array(Array &&) noexcept = default;
+  Array &operator=(Array &&) noexcept = default;
+  Array &operator=(const Array &) = delete;
+
   [[nodiscard]] std::optional<OutputType<Array<T, N>>> next() {
     if (i < N) { return underlying[i++]; }
 
@@ -165,6 +195,11 @@ class ArrayMove : public Iterator<ArrayMove<T, N>> {
   explicit ArrayMove(std::array<T, N> &&underlying)
       : i(0), underlying(std::move(underlying)) {}
 
+  ArrayMove(const ArrayMove &) = delete;
+  ArrayMove(ArrayMove &&) noexcept = default;
+  ArrayMove &operator=(ArrayMove &&) noexcept = default;
+  ArrayMove &operator=(const ArrayMove &) = delete;
+
   [[nodiscard]] std::optional<OutputType<ArrayMove<T, N>>> next() {
     if (i < N) { return std::move(underlying[i++]); }
 
@@ -186,6 +221,11 @@ class Pointer : public Iterator<Pointer<T>> {
  public:
   explicit Pointer(const T *underlying, size_t element_count)
       : m_ptr(underlying), m_end(m_ptr + element_count) {}
+
+  Pointer(const Pointer &) = delete;
+  Pointer(Pointer &&) noexcept = default;
+  Pointer &operator=(Pointer &&) noexcept = default;
+  Pointer &operator=(const Pointer &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Pointer<T>>> next() {
     if (m_ptr != m_end) { return *(m_ptr++); }
@@ -209,6 +249,11 @@ class PointerMove : public Iterator<PointerMove<T>> {
   explicit PointerMove(T *underlying, size_t element_count)
       : m_ptr(underlying), m_end(m_ptr + element_count) {}
 
+  PointerMove(const PointerMove &) = delete;
+  PointerMove(PointerMove &&) noexcept = default;
+  PointerMove &operator=(PointerMove &&) noexcept = default;
+  PointerMove &operator=(const PointerMove &) = delete;
+
   [[nodiscard]] std::optional<OutputType<PointerMove<T>>> next() {
     if (m_ptr != m_end) { return std::move(*(m_ptr++)); }
 
@@ -230,8 +275,11 @@ class Map : public Iterator<Map<F, I>> {
  public:
   explicit Map(F func, Iterator<I> &&underlying)
       : underlying(static_cast<I &&>(underlying)), func(func) {}
+
   Map(const Map &) = delete;
   Map(Map &&) noexcept = default;
+  Map &operator=(Map &&) noexcept = default;
+  Map &operator=(const Map &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Map<F, I>>> next() {
     auto content = underlying.next();
@@ -256,8 +304,11 @@ class Filter : public Iterator<Filter<F, I>> {
  public:
   explicit Filter(F predicate, Iterator<I> &&underlying)
       : underlying(static_cast<I &&>(underlying)), predicate(predicate) {}
+
   Filter(const Filter &) = delete;
   Filter(Filter &&) noexcept = default;
+  Filter &operator=(Filter &&) noexcept = default;
+  Filter &operator=(const Filter &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Filter<F, I>>> next() {
     for (auto content = underlying.next(); content.has_value();
@@ -293,6 +344,7 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
   FlatMap(const FlatMap &) = delete;
   FlatMap(FlatMap &&) noexcept = default;
   FlatMap &operator=(FlatMap &&) noexcept = default;
+  FlatMap &operator=(const FlatMap &) = delete;
 
   [[nodiscard]] std::optional<OutputType<FlatMap<F, I>>> next() {
     if (inner.has_value()) {
@@ -328,6 +380,11 @@ class Take : public Iterator<Take<I>> {
   explicit Take(size_t count, Iterator<I> &&iter)
       : i(0), take_count(count), underlying(static_cast<I &&>(iter)) {}
 
+  Take(const Take &) = delete;
+  Take(Take &&) noexcept = default;
+  Take &operator=(Take &&) noexcept = default;
+  Take &operator=(const Take &) = delete;
+
   [[nodiscard]] std::optional<OutputType<Take<I>>> next() {
     if (i++ < take_count) { return underlying.next(); }
 
@@ -350,6 +407,11 @@ class TakeRef : public Iterator<TakeRef<I>> {
  public:
   explicit TakeRef(size_t count, Iterator<I> &iter)
       : i(0), take_count(count), underlying(static_cast<I &>(iter)) {}
+
+  TakeRef(const TakeRef &) = delete;
+  TakeRef(TakeRef &&) noexcept = default;
+  TakeRef &operator=(TakeRef &&) noexcept = default;
+  TakeRef &operator=(const TakeRef &) = delete;
 
   [[nodiscard]] std::optional<OutputType<TakeRef<I>>> next() {
     if (i++ < take_count) { return underlying.next(); }
@@ -378,6 +440,11 @@ class Drop : public Iterator<Drop<I>> {
     }
   }
 
+  Drop(const Drop &) = delete;
+  Drop(Drop &&) noexcept = default;
+  Drop &operator=(Drop &&) noexcept = default;
+  Drop &operator=(const Drop &) = delete;
+
   [[nodiscard]] std::optional<OutputType<Drop<I>>> next() {
     return underlying.next();
   }
@@ -396,6 +463,11 @@ class Enumerate : public Iterator<Enumerate<I>> {
  public:
   explicit Enumerate(Iterator<I> &&iter)
       : underlying(static_cast<I &&>(iter)), i(0) {}
+
+  Enumerate(const Enumerate &) = delete;
+  Enumerate(Enumerate &&) noexcept = default;
+  Enumerate &operator=(Enumerate &&) noexcept = default;
+  Enumerate &operator=(const Enumerate &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Enumerate<I>>> next() {
     auto content = underlying.next();
@@ -425,63 +497,25 @@ class Window : public Iterator<Window<N, I>> {
     for (size_t i = 0; i < N; ++i) { m_elements[i] = m_underlying.next(); }
   }
 
+  Window(const Window &) = delete;
+  Window(Window &&) noexcept = default;
+  Window &operator=(Window &&) noexcept = default;
+  Window &operator=(const Window &) = delete;
+
   [[nodiscard]] bool last_is_none() const {
     if (m_start_index == 0) { return !m_elements[N - 1].has_value(); }
 
     return !m_elements[m_start_index - 1].has_value();
   }
 
-  template<typename T,
-           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 2>>,
-                            int> = 0>
-  T make_content() {
-    return {
-            m_elements[m_start_index].value(),
-            m_elements[(m_start_index + 1) % N].value(),
-    };
-  }
-
-  template<typename T,
-           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 3>>,
-                            int> = 0>
-  T make_content() {
-    return {
-            m_elements[m_start_index].value(),
-            m_elements[(m_start_index + 1) % N].value(),
-            m_elements[(m_start_index + 2) % N].value(),
-    };
-  }
-
-  template<typename T,
-           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 4>>,
-                            int> = 0>
-  T make_content() {
-    return {
-            m_elements[m_start_index].value(),
-            m_elements[(m_start_index + 1) % N].value(),
-            m_elements[(m_start_index + 2) % N].value(),
-            m_elements[(m_start_index + 3) % N].value(),
-    };
-  }
-
-  template<typename T,
-           std::enable_if_t<std::is_same_v<T, std::array<OutputType<I>, 5>>,
-                            int> = 0>
-  T make_content() {
-    return {
-            m_elements[m_start_index].value(),
-            m_elements[(m_start_index + 1) % N].value(),
-            m_elements[(m_start_index + 2) % N].value(),
-            m_elements[(m_start_index + 3) % N].value(),
-            m_elements[(m_start_index + 4) % N].value(),
-    };
-  }
-
   [[nodiscard]] std::optional<OutputType<Window<N, I>>> next() {
     if (last_is_none()) { return {}; }
 
-    std::array<OutputType<I>, N> content =
-            make_content<std::array<OutputType<I>, N>>();
+    std::array<OutputType<I>, N> content;
+    for (size_t i = 0; i < N; ++i) {
+      size_t j = (i + 1) % N;
+      content[i] = m_elements[j].value();
+    }
 
     m_elements[m_start_index] = m_underlying.next();
     m_start_index = (m_start_index + 1) % N;
@@ -504,6 +538,11 @@ template<typename T>
 class Range : public Iterator<Range<T>> {
  public:
   explicit Range(T begin, T end, T step) : i(begin), end(end), step(step) {}
+
+  Range(const Range &) = delete;
+  Range(Range &&) noexcept = default;
+  Range &operator=(Range &&) noexcept = default;
+  Range &operator=(const Range &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Range>> next() {
     if (i < end) {
@@ -533,6 +572,11 @@ class OpenRange : public Iterator<OpenRange<T>> {
  public:
   explicit OpenRange(T begin, T step) : i(begin), step(step) {}
 
+  OpenRange(const OpenRange &) = delete;
+  OpenRange(OpenRange &&) noexcept = default;
+  OpenRange &operator=(OpenRange &&) noexcept = default;
+  OpenRange &operator=(const OpenRange &) = delete;
+
   [[nodiscard]] std::optional<OutputType<OpenRange>> next() {
     T value = i;
     i += step;
@@ -555,6 +599,11 @@ class Function : public Iterator<Function<F>> {
  public:
   explicit Function(F func) : m_func(std::move(func)) {}
 
+  Function(const Function &) = delete;
+  Function(Function &&) noexcept = default;
+  Function &operator=(Function &&) noexcept = default;
+  Function &operator=(const Function &) = delete;
+
   [[nodiscard]] std::optional<OutputType<Function<F>>> next() {
     return std::move(m_func());
   }
@@ -575,6 +624,11 @@ class Concat : public Iterator<Concat<I1, I2>> {
  public:
   explicit Concat(Iterator<I1> &&left, Iterator<I2> &&right)
       : left(static_cast<I1 &&>(left)), right(static_cast<I2 &&>(right)) {}
+
+  Concat(const Concat &) = delete;
+  Concat(Concat &&) noexcept = default;
+  Concat &operator=(Concat &&) noexcept = default;
+  Concat &operator=(const Concat &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Concat<I1, I2>>> next() {
     auto left_content = left.next();
@@ -599,6 +653,11 @@ class ChunkMap : public Iterator<ChunkMap<E, I>> {
  public:
   explicit ChunkMap(size_t size, E expr, Iterator<I> &&iter)
       : underlying(static_cast<I &&>(iter)), size(size), expr(expr) {}
+
+  ChunkMap(const ChunkMap &) = delete;
+  ChunkMap(ChunkMap &&) noexcept = default;
+  ChunkMap &operator=(ChunkMap &&) noexcept = default;
+  ChunkMap &operator=(const ChunkMap &) = delete;
 
   [[nodiscard]] std::optional<OutputType<ChunkMap<E, I>>> next() {
     auto it = TakeRef<I>(size, underlying);
@@ -629,6 +688,11 @@ class Chunk : public Iterator<Chunk<I>> {
   explicit Chunk(size_t size, Iterator<I> &&iter)
       : underlying(static_cast<I &&>(iter)), size(size) {}
 
+  Chunk(const Chunk &) = delete;
+  Chunk(Chunk &&) noexcept = default;
+  Chunk &operator=(Chunk &&) noexcept = default;
+  Chunk &operator=(const Chunk &) = delete;
+
   [[nodiscard]] std::optional<OutputType<Chunk<I>>> next() {
     auto it = TakeRef<I>(size, underlying);
     auto first = it.next();
@@ -656,6 +720,11 @@ class Partition : public Iterator<Partition<I>> {
   Partition(std::vector<size_t> partition_sizes, Iterator<I> &&underlying)
       : m_partition_index(0), m_partition_sizes(std::move(partition_sizes)),
         m_underlying(static_cast<I &&>(underlying)) {}
+
+  Partition(const Partition &) = delete;
+  Partition(Partition &&) noexcept = default;
+  Partition &operator=(Partition &&) noexcept = default;
+  Partition &operator=(const Partition &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Partition<I>>> next() {
     size_t n = m_partition_index == m_partition_sizes.size()
@@ -688,6 +757,11 @@ class Zip : public Iterator<Zip<I1, I2>> {
  public:
   explicit Zip(Iterator<I1> &&left, Iterator<I2> &&right)
       : left(static_cast<I1 &&>(left)), right(static_cast<I2 &&>(right)) {}
+
+  Zip(const Zip &) = delete;
+  Zip(Zip &&) noexcept = default;
+  Zip &operator=(Zip &&) noexcept = default;
+  Zip &operator=(const Zip &) = delete;
 
   [[nodiscard]] std::optional<OutputType<Zip<I1, I2>>> next() {
     auto l = left.next();
