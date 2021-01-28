@@ -106,6 +106,26 @@ expression::Chunk chunk(size_t size);
  */
 expression::Partition partition(std::vector<size_t> partition_sizes);
 
+template<typename T>
+expression::Prepend<T> prepend(std::vector<T> xs) {
+  return expression::Prepend<T>(std::move(xs));
+}
+
+template<typename T>
+expression::Prepend<T> prepend(std::initializer_list<T> xs) {
+  return expression::Prepend<T>(xs);
+}
+
+template<typename T>
+expression::Append<T> append(std::vector<T> xs) {
+  return expression::Append<T>(std::move(xs));
+}
+
+template<typename T>
+expression::Append<T> append(std::initializer_list<T> xs) {
+  return expression::Append<T>(xs);
+}
+
 /**
  * Creates a composition of two expressions. `e1` is applied first, then `e2`.
  */

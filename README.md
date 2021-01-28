@@ -240,16 +240,17 @@ This example prints the elements of the input
 iter({1, 2, 3}) | for_each([](int x) { std::cout << x << std::endl; });
 ```
 
-### `pairwise()`
-Iterates over adjacent pairs instead of single elements
+### `window<N>()`
+Iterates over an `N` sized window of the underlying iterator.
 
-This example collects pairs of elements into a vector
+This example sums three and three elements.
 ```cpp
 auto ys = iter({1, 2, 3, 4})
-    | pairwise()
+    | window<3>
+    | map([](auto xs) { return xs[0] + xs[1] + xs[2]; })
     | collect<std::vector>();
 
-// ys == std::vector<std::pair<int, int>> {{1, 2}, {2, 3}, {3, 4}}
+// ys == std::vector<int> {6, 9}
 ```
 
 ### `chunk_map(size_t size, E expr)`
@@ -301,6 +302,31 @@ auto ys = iter(xs) | partition(partition_sizes)
 
 // ys == std::vector<int> {3, 12, 13}
 ```
+
+### `prepend(ys)`
+Prepends some elements at the front of the iterator.
+`ys` has type `std::vector` or `std::initializer_list` of some type `T`.
+
+This exmaple prepends `{1, 2}` to the iterator `{3, 4}`.
+```cpp
+std::vector<int> xs {3, 4};
+auto ys = iter(xs) | prepend({1, 2}) | collect<std::vector>();
+
+// ys == std::vector<int> {1, 2, 3, 4}
+```
+
+### `append(ys)`
+Appends some elements at the end of the iterator.
+`ys` has type `std::vector` or `std::initializer_list` of some type `T`.
+
+This exmaple appends `{3, 4}` to the iterator `{1, 2}`.
+```cpp
+std::vector<int> xs{1, 2};
+auto ys = iter(xs) | append({3, 4}) | collect<std::vector>();
+
+// ys == std::vector<int>{1, 2, 3, 4}
+```
+
 
 ## Supported Collections
 ### `std::vector`

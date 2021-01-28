@@ -239,6 +239,45 @@ struct Types<Partition, I> {
   using Output = iterator::Partition<I>;
 };
 
+template<typename T>
+class Prepend : public Expression<Prepend<T>> {
+ public:
+  Prepend(std::vector<T> xs) : m_xs(std::move(xs)) {}
+  Prepend(std::initializer_list<T> xs) : m_xs(xs) {}
+
+  template<typename I>
+  OutputType<Prepend<T>, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Concat(iterator::STL(m_xs), std::move(iter));
+  }
+
+ private:
+  std::vector<T> m_xs;
+};
+
+template<typename T, typename I>
+struct Types<Prepend<T>, I> {
+  using Output = iterator::Concat<iterator::STL<std::vector, T>, I>;
+};
+
+template<typename T>
+class Append : public Expression<Append<T>> {
+ public:
+  Append(std::vector<T> xs) : m_xs(std::move(xs)) {}
+
+  template<typename I>
+  OutputType<Append<T>, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::Concat(std::move(iter), iterator::STL(m_xs));
+  }
+
+ private:
+  std::vector<T> m_xs;
+};
+
+template<typename T, typename I>
+struct Types<Append<T>, I> {
+  using Output = iterator::Concat<iterator::STL<std::vector, T>, I>;
+};
+
 template<typename F>
 class ForEach : public Expression<ForEach<F>> {
  public:

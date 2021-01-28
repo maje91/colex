@@ -471,6 +471,28 @@ TEST_CASE("partition") {
   CHECK(ys.size() == 3);
 }
 
+TEST_CASE("prepend") {
+  std::vector<int> xs {3, 4};
+  auto ys = iter(xs) | prepend({1, 2}) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys[3] == 4);
+  CHECK(ys.size() == 4);
+}
+
+TEST_CASE("append") {
+  std::vector<int> xs{1, 2};
+  auto ys = iter(xs) | append({3, 4}) | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys[3] == 4);
+  CHECK(ys.size() == 4);
+}
+
 TEST_CASE("function") {
   auto f = []() -> std::optional<MoveInt> {
     static size_t i = 0;
