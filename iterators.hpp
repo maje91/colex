@@ -333,11 +333,11 @@ template<typename F, typename I>
 class FlatMap : public Iterator<FlatMap<F, I>> {
  public:
   explicit FlatMap(F func, Iterator<I> &&underlying)
-      : outer(static_cast<I &&>(underlying)), func(func) {
-    auto outer_content = outer.next();
+      : m_outer(static_cast<I &&>(underlying)), m_func(std::move(func)) {
+    auto outer_content = m_outer.next();
 
     if (outer_content.has_value()) {
-      inner = std::move(func(std::move(outer_content.value())));
+      m_inner.emplace(m_func(std::move(outer_content.value())));
     }
   }
 
@@ -347,15 +347,15 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
   FlatMap &operator=(const FlatMap &) = delete;
 
   [[nodiscard]] std::optional<OutputType<FlatMap<F, I>>> next() {
-    if (inner.has_value()) {
-      auto inner_content = inner.value().next();
+    if (m_inner.has_value()) {
+      auto inner_content = m_inner.value().next();
 
       if (inner_content.has_value()) { return inner_content; }
 
-      auto outer_content = outer.next();
+      auto outer_content = m_outer.next();
 
       if (outer_content.has_value()) {
-        inner = func(std::move(outer_content.value()));
+        m_inner.emplace(m_func(std::move(outer_content.value())));
         return next();
       }
     }
@@ -364,9 +364,9 @@ class FlatMap : public Iterator<FlatMap<F, I>> {
   }
 
  private:
-  I outer;
-  std::optional<std::invoke_result_t<F, OutputType<I>>> inner;
-  F func;
+  I m_outer;
+  std::optional<std::invoke_result_t<F, OutputType<I>>> m_inner;
+  F m_func;
 };
 
 template<typename F, typename I>
@@ -513,7 +513,7 @@ class Window : public Iterator<Window<N, I>> {
 
     std::array<OutputType<I>, N> content;
     for (size_t i = 0; i < N; ++i) {
-      size_t j = (i + 1) % N;
+      size_t j = (m_start_index + i) % N;
       content[i] = m_elements[j].value();
     }
 
