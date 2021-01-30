@@ -219,12 +219,12 @@ TEST_CASE("pointer move") {
   auto xs = move_int_vec();
 
   auto ys = iter(xs.data(), 3) | map([](MoveInt x) { return 2 * x.x; })
-            | collect<std::vector>();
+          | collect<std::vector>();
 
-          CHECK(ys[0] == 0);
-          CHECK(ys[1] == 2);
-          CHECK(ys[2] == 4);
-          CHECK(ys.size() == 3);
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 4);
+  CHECK(ys.size() == 3);
 }
 
 TEST_CASE("zip") {
@@ -458,8 +458,8 @@ TEST_CASE("chunk") {
 }
 
 TEST_CASE("partition") {
-  std::vector<size_t> partition_sizes {2, 3};
-  std::vector<int> xs {1, 2, 3, 4, 5, 6, 7};
+  std::vector<size_t> partition_sizes{2, 3};
+  std::vector<int> xs{1, 2, 3, 4, 5, 6, 7};
 
   auto ys = iter(xs) | partition(partition_sizes)
           | map([](auto x) { return std::move(x) | fold1(std::plus()); })
@@ -471,8 +471,21 @@ TEST_CASE("partition") {
   CHECK(ys.size() == 3);
 }
 
+TEST_CASE("partition_map") {
+  std::vector<size_t> partition_sizes{2, 3};
+  std::vector<int> xs{1, 2, 3, 4, 5, 6, 7};
+
+  auto ys = iter(xs) | partition_map(partition_sizes, fold1(std::plus()))
+          | collect<std::vector>();
+
+  CHECK(ys[0] == 3);
+  CHECK(ys[1] == 12);
+  CHECK(ys[2] == 13);
+  CHECK(ys.size() == 3);
+}
+
 TEST_CASE("prepend") {
-  std::vector<int> xs {3, 4};
+  std::vector<int> xs{3, 4};
   auto ys = iter(xs) | prepend({1, 2}) | collect<std::vector>();
 
   CHECK(ys[0] == 1);

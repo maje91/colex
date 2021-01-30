@@ -92,8 +92,8 @@ expression::Composition<expression::Drop, expression::Take> slice(size_t start, 
  * Creates a chunk map expression. See README for details.
  */
 template<typename E>
-expression::ChunkMap<E> chunk_map(size_t size, E expr) {
-  return expression::ChunkMap<E>(size, expr);
+expression::ChunkMap<E> chunk_map(size_t size, expression::Expression<E> &&expr) {
+  return expression::ChunkMap<E>(size, std::move(expr));
 }
 
 /**
@@ -105,6 +105,14 @@ expression::Chunk chunk(size_t size);
  * Creates a partition expression. See README for details.
  */
 expression::Partition partition(std::vector<size_t> partition_sizes);
+
+/**
+ * Creates a partition map expression. See README for details.
+ */
+template<typename E>
+expression::PartitionMap<E> partition_map(std::vector<size_t> partition_sizes, expression::Expression<E>&& expr) {
+  return expression::PartitionMap<E>(std::move(partition_sizes), std::move(expr));
+}
 
 template<typename T>
 expression::Prepend<T> prepend(std::vector<T> xs) {

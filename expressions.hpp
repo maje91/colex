@@ -81,7 +81,8 @@ class Fold1 : public Expression<Fold1<F>> {
   OutputType<Fold1<F>, I> apply(iterator::Iterator<I> &&iter) const {
     OutputType<Fold1<F>, I> result = iter.next().value();
 
-    for (auto content = iter.next(); content.has_value(); content = iter.next()) {
+    for (auto content = iter.next(); content.has_value();
+         content = iter.next()) {
       result = func(std::move(result), std::move(content.value()));
     }
 
@@ -94,7 +95,8 @@ class Fold1 : public Expression<Fold1<F>> {
 
 template<typename F, typename I>
 struct Types<Fold1<F>, I> {
-  using Output = std::result_of_t<F(iterator::OutputType<I>, iterator::OutputType<I>)>;
+  using Output =
+          std::result_of_t<F(iterator::OutputType<I>, iterator::OutputType<I>)>;
 };
 
 template<typename F>
@@ -186,7 +188,8 @@ struct Types<Enumerate, I> {
 template<typename E>
 class ChunkMap : public Expression<ChunkMap<E>> {
  public:
-  explicit ChunkMap(size_t size, E expr) : size(size), expr(expr) {}
+  explicit ChunkMap(size_t size, Expression<E> &&expr)
+      : size(size), expr(static_cast<E &&>(expr)) {}
 
   template<typename I>
   OutputType<ChunkMap, I> apply(iterator::Iterator<I> &&iter) const {
@@ -223,7 +226,8 @@ struct Types<Chunk, I> {
 
 class Partition : public Expression<Partition> {
  public:
-  explicit Partition(std::vector<size_t> partition_sizes) : m_partition_sizes(std::move(partition_sizes)) {}
+  explicit Partition(std::vector<size_t> partition_sizes)
+      : m_partition_sizes(std::move(partition_sizes)) {}
 
   template<typename I>
   OutputType<Partition, I> apply(iterator::Iterator<I> &&iter) const {
@@ -237,6 +241,29 @@ class Partition : public Expression<Partition> {
 template<typename I>
 struct Types<Partition, I> {
   using Output = iterator::Partition<I>;
+};
+
+template<typename E>
+class PartitionMap : public Expression<PartitionMap<E>> {
+ public:
+  explicit PartitionMap(std::vector<size_t> partition_sizes,
+                        Expression<E> &&expr)
+      : m_partition_sizes(std::move(partition_sizes)),
+        m_expr(static_cast<E &&>(expr)) {}
+
+  template<typename I>
+  OutputType<PartitionMap<E>, I> apply(iterator::Iterator<I> &&iter) const {
+    return iterator::PartitionMap<E, I>(m_partition_sizes, m_expr, std::move(iter));
+  }
+
+ private:
+  std::vector<size_t> m_partition_sizes;
+  E m_expr;
+};
+
+template<typename E, typename I>
+struct Types<PartitionMap<E>, I> {
+  using Output = iterator::PartitionMap<E, I>;
 };
 
 template<typename T>
@@ -304,9 +331,10 @@ template<typename E1, typename E2>
 class Composition : public Expression<Composition<E1, E2>> {
  public:
   explicit Composition(const E1 &e1, const E2 &e2) : e1(e1), e2(e2) {}
-  explicit Composition(E1&& e1, const E2 &e2) : e1(std::move(e1)), e2(e2) {}
-  explicit Composition(const E1 &e1, E2&& e2) : e1(e1), e2(std::move(e2)) {}
-  explicit Composition(E1&& e1, E2&& e2) : e1(std::move(e1)), e2(std::move(e2)) {}
+  explicit Composition(E1 &&e1, const E2 &e2) : e1(std::move(e1)), e2(e2) {}
+  explicit Composition(const E1 &e1, E2 &&e2) : e1(e1), e2(std::move(e2)) {}
+  explicit Composition(E1 &&e1, E2 &&e2)
+      : e1(std::move(e1)), e2(std::move(e2)) {}
 
   template<typename I>
   OutputType<Composition<E1, E2>, I> apply(iterator::Iterator<I> &&iter) const {
