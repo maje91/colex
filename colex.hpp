@@ -53,6 +53,11 @@ expression::FlatMap<F> flat_map(F func) {
 }
 
 /**
+ * Creates a flatten expression, See README for details
+ */
+expression::Flatten flatten();
+
+/**
  * Creates a window expression. See README for details
  */
 template<size_t N>

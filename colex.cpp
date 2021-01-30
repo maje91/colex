@@ -26,4 +26,6 @@ expression::Partition partition(std::vector<size_t> partition_sizes) {
   return expression::Partition(std::move(partition_sizes));
 }
 
+expression::Flatten flatten() { return expression::Flatten(); }
+
 }

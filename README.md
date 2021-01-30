@@ -188,6 +188,21 @@ auto ys = iter(xs)
 // ys == std::vector<char> { 'a', ' ', 'b', ' ', 'c', ' ' }
 ```
 
+### `flatten()`
+Flattens an iterator of iterators.
+
+This exmaples flatten a nested vector
+
+```cpp
+std::vector<std::vector<int>> xs = {{1, 2}, {3}};
+auto ys = iter(std::move(xs))
+| map([](auto inner) { return iter(std::move(inner)); })
+| flatten()
+| collect<std::vector>();
+
+// ys == std::vector<int> {1, 2, 3}
+```
+
 ### `take(size_t count)`
 Stops iterating after the first `count` input elements.
 

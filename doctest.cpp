@@ -484,6 +484,19 @@ TEST_CASE("partition_map") {
   CHECK(ys.size() == 3);
 }
 
+TEST_CASE("flatten") {
+  std::vector<std::vector<int>> xs = {{1, 2}, {3}};
+  auto ys = iter(std::move(xs))
+          | map([](auto inner) { return iter(std::move(inner)); })
+          | flatten()
+          | collect<std::vector>();
+
+  CHECK(ys[0] == 1);
+  CHECK(ys[1] == 2);
+  CHECK(ys[2] == 3);
+  CHECK(ys.size() == 3);
+}
+
 TEST_CASE("prepend") {
   std::vector<int> xs{3, 4};
   auto ys = iter(xs) | prepend({1, 2}) | collect<std::vector>();
