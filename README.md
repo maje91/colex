@@ -143,6 +143,21 @@ auto y = iter(xs)
 // y == 6
 ```
 
+### `scan(U initial, F func)`
+Same as fold, but outputs intermediate results as an iterator instead
+of only the final value. `initial` is always the first element of the
+resulting iterator.
+
+This example sums all elements of `xs` and iterates over intermediate
+results
+```cpp
+std::vector<int> xs = {1, 2, 3};
+
+auto ys = iter(xs) | scan(0, std::plus()) | collect<std::vector>();
+
+// ys == std::vector<int> {0, 1, 3, 6}
+```
+
 ### `fold1(F func)`
 Reduces all input elements to a single value where the first element
 is used as the initial value. Requires that the input iterator has at least

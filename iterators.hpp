@@ -299,6 +299,45 @@ struct Types<Map<F, I>> {
   using Output = std::invoke_result_t<F, OutputType<I>>;
 };
 
+template<typename T, typename F, typename I>
+class Scan : public Iterator<Scan<T, F, I>> {
+ public:
+  explicit Scan(T initial, F func, Iterator<I> &&underlying)
+          : m_underlying(static_cast<I&&>(underlying)), m_value(initial), m_func(func) {}
+
+  Scan(const Scan &) = delete;
+  Scan(Scan &&) noexcept = default;
+  Scan &operator=(Scan &&) noexcept = default;
+  Scan &operator=(const Scan &) = delete;
+
+  [[nodiscard]] std::optional<OutputType<Scan<T, F, I>>> next() {
+    if (m_value.has_value()) {
+      T output = *m_value;
+      m_value = {};
+
+      auto x = m_underlying.next();
+
+      if (x.has_value()) {
+        m_value = m_func(output, x.value());
+      }
+
+      return output;
+    }
+
+    return {};
+  }
+
+ private:
+  I m_underlying;
+  std::optional<T> m_value;
+  F m_func;
+};
+
+template<typename T, typename F, typename I>
+struct Types<Scan<T, F, I>> {
+  using Output = T;
+};
+
 template<typename F, typename I>
 class Filter : public Iterator<Filter<F, I>> {
  public:
@@ -868,5 +907,6 @@ template<typename I1, typename I2>
 struct Types<Zip<I1, I2>> {
   using Output = std::pair<OutputType<I1>, OutputType<I2>>;
 };
+
 
 }// namespace colex::iterator

@@ -536,3 +536,15 @@ TEST_CASE("function") {
   CHECK(ys[2] == 3);
   CHECK(ys.size() == 3);
 }
+
+TEST_CASE("scan") {
+  std::vector<int> xs{1,2,3,4};
+  auto ys = iter(xs) | scan(0, std::plus()) | collect<std::vector>();
+
+  CHECK(ys[0] == 0);
+  CHECK(ys[1] == 1);
+  CHECK(ys[2] == 3);
+  CHECK(ys[3] == 6);
+  CHECK(ys[4] == 10);
+  CHECK(ys.size() == 5);
+}

@@ -37,6 +37,14 @@ expression::Fold<T, F> fold(T initial, F func) {
 }
 
 /**
+ * Creates a scan expression. See README for details
+ */
+template<typename T, typename F>
+expression::Scan<T, F> scan(T initial, F func) {
+  return expression::Scan<T, F>(initial, std::move(func));
+}
+
+/**
  * Creates a fold1 expression. See README for details
  */
 template<typename F>
