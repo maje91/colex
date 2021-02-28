@@ -1,6 +1,6 @@
 #pragma once
 
-#include "expressions.hpp"
+#include "expressions/inc/expressions.hpp"
 
 #include <cstddef>
 #include <array>
@@ -127,21 +127,33 @@ expression::PartitionMap<E> partition_map(std::vector<size_t> partition_sizes, e
   return expression::PartitionMap<E>(std::move(partition_sizes), std::move(expr));
 }
 
+/**
+ * Creates a prepend expression. See README for details.
+ */
 template<typename T>
 expression::Prepend<T> prepend(std::vector<T> xs) {
   return expression::Prepend<T>(std::move(xs));
 }
 
+/**
+ * Creates a prepend expression. See README for details.
+ */
 template<typename T>
 expression::Prepend<T> prepend(std::initializer_list<T> xs) {
   return expression::Prepend<T>(xs);
 }
 
+/**
+ * Creates a append expression. See README for details.
+ */
 template<typename T>
 expression::Append<T> append(std::vector<T> xs) {
   return expression::Append<T>(std::move(xs));
 }
 
+/**
+ * Creates a append expression. See README for details.
+ */
 template<typename T>
 expression::Append<T> append(std::initializer_list<T> xs) {
   return expression::Append<T>(xs);

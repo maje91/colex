@@ -1,0 +1,22 @@
+#pragma once
+
+#include "interface.hpp"
+
+#include "../src/append.hpp"
+#include "../src/chunk.hpp"
+#include "../src/chunk_map.hpp"
+#include "../src/composition.hpp"
+#include "../src/drop.hpp"
+#include "../src/enumerate.hpp"
+#include "../src/filter.hpp"
+#include "../src/flat_map.hpp"
+#include "../src/flatten.hpp"
+#include "../src/fold.hpp"
+#include "../src/for_each.hpp"
+#include "../src/map.hpp"
+#include "../src/partition.hpp"
+#include "../src/partition_map.hpp"
+#include "../src/prepend.hpp"
+#include "../src/scan.hpp"
+#include "../src/take.hpp"
+#include "../src/window.hpp"
