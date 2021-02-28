@@ -58,7 +58,7 @@ set(EXPRESSIONS_SRC
 
 set(ROOT_SRC colex.cpp colex.hpp)
 
-set(TEST_SRC doctest.cpp doctest.hpp)
+set(TEST_SRC tests.cpp doctest.hpp)
 
 set(SRC ${ROOT_SRC} ${EXPRESSIONS_SRC} ${ITERATORS_SRC})
 
