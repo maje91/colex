@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.15)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_FLAGS "-Wall -Wextra -pedantic -Wno-pessimizing-move -Wno-redundant-move")
 set(CMAKE_CXX_FLAGS "-Wall -Wextra -pedantic -Wno-pessimizing-move -Wno-redundant-move")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 project(colex)
 
