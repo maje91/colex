@@ -62,11 +62,7 @@ set(TEST_SRC tests.cpp doctest.hpp)
 set(SRC ${ROOT_SRC} ${EXPRESSIONS_SRC} ${ITERATORS_SRC})
 
 add_library(${LIB_NAME} SHARED ${SRC})
-target_include_directories(${LIB_NAME} PRIVATE .)
+target_include_directories(${LIB_NAME} PUBLIC .)
 
 add_executable(${TESTS_NAME} ${SRC} ${TEST_SRC})
 target_include_directories(${TESTS_NAME} PRIVATE .)
-
-
-install(TARGETS ${LIB_NAME} DESTINATION lib)
-install(FILES ${INC} DESTINATION include/${LIB_NAME})
